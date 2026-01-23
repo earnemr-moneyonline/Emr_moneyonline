@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | EMR MONEY</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --main: #0a1931; --gold: #ffc947; }
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
+        .header { background: var(--main); color: white; padding: 20px; display: flex; align-items: center; gap: 15px; }
+        .section { background: white; margin: 15px; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        h3 { font-size: 0.9rem; color: #666; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .profile-edit { text-align: center; position: relative; margin-bottom: 25px; }
+        .img-container { width: 100px; height: 100px; border-radius: 50%; background: #ddd; margin: 0 auto; overflow: hidden; border: 3px solid var(--gold); }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .camera-btn { position: absolute; bottom: 0; right: 35%; background: var(--gold); padding: 8px; border-radius: 50%; cursor: pointer; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #fdfdfd; }
+        .note { font-size: 0.7rem; color: #d35400; margin-top: 4px; }
+
+        .btn-save { width: 100%; background: var(--main); color: white; padding: 15px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+        .upgrade-card { background: linear-gradient(45deg, #0a1931, #1e3c72); color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="client_dashboard.html" style="color:white;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-size: 1.1rem; margin: 0;">Settings & Profile</h2>
+    </div>
+
+    <div class="section">
+        <div class="profile-edit">
+            <div class="img-container">
+                <img id="profile-img" src="https://i.pravatar.cc/150?u=myprofile" alt="Profile">
+            </div>
+            <label for="img-upload" class="camera-btn"><i class="fas fa-camera"></i></label>
+            <input type="file" id="img-upload" hidden accept="image/*" onchange="previewImg(this)">
+            <p class="note">Picha inaweza kubadilishwa kila baada ya masaa 24.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Username (@)</label>
+            <input type="text" id="username" value="Architect_User">
+            <p class="note">Username inaweza kubadilishwa kila baada ya siku 30.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Nickname</label>
+            <input type="text" id="nickname" value="The Architect">
+            <p class="note">Nickname inaweza kubadilishwa kila baada ya siku 7.</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Account Level</h3>
+        <div class="upgrade-card">
+            <div>
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.8;">Hali ya Akaunti</p>
+                <h2 style="margin: 0; color: var(--gold);">Beginner</h2>
+            </div>
+            <button style="background: var(--gold); border: none; padding: 8px 15px; border-radius: 5px; font-weight: 700;">UPGRADE</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Withdrawal Settings</h3>
+        <div class="form-group">
+            <label>Mobile Money / Bank Number</label>
+            <input type="text" placeholder="Mfano: 07XXXXXXXX">
+        </div>
+        <button class="btn-save">HIFADHI MABADILIKO</button>
+    </div>
+
+    <script>
+        function previewImg(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-img').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>
