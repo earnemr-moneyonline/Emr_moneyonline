@@ -3,183 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMR MONEY | Client Dashboard</title>
+    <title>EMR MONEY | Work Feed</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --emr-blue: #0a1931; --emr-gold: #ffc947; --emr-grey: #1a1a1a; --text-light: #f1f1f1; }
+        :root { --emr-blue: #0a1931; --emr-gold: #ffc947; --dark-smoke: #121212; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--emr-blue); color: var(--text-light); overflow: hidden; }
+        body { font-family: 'Poppins', sans-serif; background: #000; color: white; overflow: hidden; }
 
-        /* Header / Top Nav */
-        .top-nav { height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: rgba(0,0,0,0.3); position: fixed; top: 0; width: 100%; z-index: 100; }
-        .top-tabs { display: flex; gap: 15px; font-size: 0.85rem; font-weight: 600; opacity: 0.7; }
-        .top-tabs span.active { color: var(--emr-gold); border-bottom: 2px solid var(--emr-gold); opacity: 1; }
+        /* TikTok Style Feed */
+        .feed-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        .job-post { 
+            height: 100vh; width: 100%; scroll-snap-align: start; 
+            position: relative; background-size: cover; background-position: center;
+        }
 
-        /* Main Container */
-        .main-content { height: calc(100vh - 120px); margin-top: 60px; overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .section { display: none; height: 100%; }
-        .section.active { display: block; }
+        /* Overlay Gradient */
+        .overlay { 
+            position: absolute; bottom: 0; width: 100%; height: 50%; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 20px 80px 100px 20px;
+        }
 
-        /* TikTok Home Feed */
-        .work-card { height: 100%; scroll-snap-align: start; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.9)); border-bottom: 1px solid #333; }
-        .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .profile-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--emr-gold); background: #555; overflow: hidden; }
-        .follow-btn { background: var(--emr-gold); color: black; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; margin-top: -15px; font-size: 0.7rem; border: 2px solid white; }
-        .action-icon { font-size: 1.8rem; text-align: center; }
-        .action-icon span { font-size: 0.7rem; display: block; }
+        /* Side Action Bar (TikTok Style) */
+        .side-actions { 
+            position: absolute; right: 15px; bottom: 120px; 
+            display: flex; flex-direction: column; align-items: center; gap: 20px; 
+        }
+        .merchant-profile { position: relative; margin-bottom: 10px; }
+        .m-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; background: #444; }
+        .follow-plus { 
+            position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            background: #ffc947; color: black; border-radius: 50%; width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #000;
+        }
+        .action-item { text-align: center; cursor: pointer; }
+        .action-item i { font-size: 30px; color: white; display: block; }
+        .action-item span { font-size: 11px; margin-top: 5px; display: block; color: var(--emr-gold); }
 
-        .work-info { margin-bottom: 20px; max-width: 80%; }
-        .work-info h4 { color: var(--emr-gold); margin-bottom: 5px; }
-        .work-info p { font-size: 0.85rem; opacity: 0.9; }
-        .work-tags { font-size: 0.75rem; color: #aaa; margin-top: 5px; }
+        /* Job Info */
+        .job-info h3 { font-size: 1.1rem; color: var(--emr-gold); margin-bottom: 5px; }
+        .job-info p { font-size: 0.85rem; line-height: 1.4; opacity: 0.9; }
 
-        /* Stats & Finance */
-        .stats-container { padding: 20px; }
-        .balance-tile { background: linear-gradient(45deg, #162a4d, #0a1931); padding: 25px; border-radius: 20px; border: 1px solid var(--emr-gold); text-align: center; margin-bottom: 20px; }
-        .balance-tile h1 { font-size: 2.2rem; color: var(--emr-gold); }
-        .btn-withdraw { background: var(--emr-gold); border: none; padding: 10px 25px; border-radius: 20px; font-weight: 600; margin-top: 10px; cursor: pointer; }
+        /* Bottom Navigation */
+        .bottom-nav { 
+            position: fixed; bottom: 0; width: 100%; height: 70px; 
+            background: #000; display: flex; justify-content: space-around; align-items: center; 
+            border-top: 0.5px solid #222; z-index: 1000;
+        }
+        .nav-link { text-align: center; color: #888; text-decoration: none; font-size: 10px; }
+        .nav-link.active { color: white; }
+        .nav-link i { font-size: 22px; display: block; margin-bottom: 4px; }
 
-        /* Bottom Nav */
-        .bottom-nav { height: 60px; position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; }
-        .nav-item { text-align: center; color: #888; font-size: 0.7rem; cursor: pointer; }
-        .nav-item.active { color: white; }
-        .nav-item i { font-size: 1.3rem; display: block; margin-bottom: 2px; }
-
-        /* Profile Page */
-        .profile-header { text-align: center; padding: 30px 20px; }
-        .user-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--emr-gold); margin: 0 auto 15px; background: #333; position: relative; }
-        .edit-avatar { position: absolute; bottom: 0; right: 0; background: var(--emr-gold); color: black; padding: 5px; border-radius: 50%; font-size: 0.7rem; }
-        .tier-badge { background: #ffc947; color: #000; padding: 3px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: 700; margin-top: 5px; display: inline-block; }
-
+        /* Top Bar */
+        .top-bar { 
+            position: fixed; top: 0; width: 100%; height: 60px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 20px; z-index: 1000; background: linear-gradient(rgba(0,0,0,0.6), transparent);
+        }
     </style>
 </head>
 <body>
 
-    <div class="top-nav">
-        <i class="fas fa-cog" onclick="toggleSettings()"></i>
-        <div class="top-tabs" id="home-tabs">
-            <span class="active">New Works</span>
-            <span>Following</span>
-            <span>For You</span>
-            <span>Friends</span>
+    <div class="top-bar">
+        <a href="settings.html" style="color:white;"><i class="fas fa-cog fa-lg"></i></a>
+        <div style="font-weight: 600; font-size: 0.9rem;">
+            <span style="border-bottom: 2px solid gold; padding-bottom: 5px;">For You</span>
+            <span style="margin-left: 15px; opacity: 0.6;">Following</span>
         </div>
-        <i class="fas fa-search"></i>
+        <i class="fas fa-search fa-lg"></i>
     </div>
 
-    <div class="main-content" id="main-scroll">
-        
-        <div id="home-section" class="section active">
-            <div class="work-card">
-                <div class="side-bar">
-                    <div class="profile-pic"><img src="" alt="" style="width:100%"></div>
-                    <div class="follow-btn"><i class="fas fa-plus"></i></div>
-                    <div class="action-icon" onclick="startWork('Instagram Likes')"><i class="fas fa-play-circle" style="color:var(--emr-gold)"></i><span>Anza</span></div>
-                    <div class="action-icon"><i class="fas fa-cloud-upload-alt"></i><span>Submit</span></div>
-                </div>
-                <div class="work-info">
-                    <h4>@Mfanyabiashara_Mjanja</h4>
-                    <p>Nahitaji Likes 500 kwenye picha yangu ya Instagram. Malipo ni TZS 2,000.</p>
-                    <div class="work-tags"><i class="fas fa-map-marker-alt"></i> Instagram | Worldwide</div>
+    <div class="feed-container">
+        <div class="job-post" style="background-image: url('https://source.unsplash.com/random/900x1600/?office,work');">
+            <div class="overlay">
+                <div class="job-info">
+                    <h3>@Digital_Empire_TZ</h3>
+                    <p>Nahitaji watu 100 wakafollow akaunti ya biashara TikTok. Lipwa TZS 300 kwa kila follow.</p>
                 </div>
             </div>
-
-            <div class="work-card">
-                <div class="side-bar">
-                    <div class="profile-pic"></div>
-                    <div class="follow-btn"><i class="fas fa-plus"></i></div>
-                    <div class="action-icon"><i class="fas fa-play-circle"></i><span>Anza</span></div>
-                    <div class="action-icon"><i class="fas fa-cloud-upload-alt"></i><span>Submit</span></div>
+            <div class="side-actions">
+                <div class="merchant-profile">
+                    <img src="https://i.pravatar.cc/150?u=1" class="m-pic">
+                    <div class="follow-plus"><i class="fas fa-plus"></i></div>
                 </div>
-                <div class="work-info">
-                    <h4>@Tech_Store_TZ</h4>
-                    <p>Tafadhali kufuata (Follow) akaunti yetu ya TikTok upate TZS 500 hapo hapo.</p>
-                    <div class="work-tags"><i class="fas fa-map-marker-alt"></i> TikTok | Tanzania</div>
-                </div>
+                <div class="action-item"><i class="fas fa-play-circle"></i><span>Anza Kazi</span></div>
+                <div class="action-item"><i class="fas fa-upload"></i><span>Submit</span></div>
+                <div class="action-item"><i class="fas fa-info-circle"></i><span>Details</span></div>
             </div>
         </div>
 
-        <div id="notif-section" class="section">
-            <div style="padding: 20px;">
-                <h3 style="color:var(--emr-gold)">Taarifa (Notifications)</h3>
-                <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-top:15px;">
-                    <p style="font-size:0.85rem;">Mfanyabiashara unayemfuta <b>@Tech_Store</b> amepost kazi mpya!</p>
+        <div class="job-post" style="background-image: url('https://source.unsplash.com/random/900x1600/?tech,mobile');">
+            <div class="overlay">
+                <div class="job-info">
+                    <h3>@Smart_Gadgets</h3>
+                    <p>Toa maoni (Comment) chanya kwenye Google Maps kuhusu duka letu. Lipwa TZS 1,500.</p>
                 </div>
             </div>
-        </div>
-
-        <div id="stats-section" class="section">
-            <div class="stats-container">
-                <div class="balance-tile">
-                    <p style="font-size: 0.8rem; opacity: 0.7;">Salio Lako (Account Balance)</p>
-                    <h1 id="user-balance">TZS 12,450</h1>
-                    <button class="btn-withdraw" onclick="withdraw()">WITHDRAW</button>
-                    <p style="font-size: 0.6rem; margin-top: 5px; opacity: 0.5;">Kiwango cha chini: TZS 5,000</p>
+            <div class="side-actions">
+                <div class="merchant-profile">
+                    <img src="https://i.pravatar.cc/150?u=2" class="m-pic">
+                    <div class="follow-plus"><i class="fas fa-plus"></i></div>
                 </div>
-                <canvas id="incomeChart" style="width:100%; height:200px;"></canvas>
-                <div style="margin-top: 20px;">
-                    <h4>Historia ya Miamala</h4>
-                    <button class="btn-withdraw" style="background:#333; color:white; font-size:0.7rem;">Download PDF Report</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="profile-section" class="section">
-            <div class="profile-header">
-                <div class="user-avatar">
-                    <i class="fas fa-camera edit-avatar"></i>
-                </div>
-                <h3 id="display-name">Architect_User</h3>
-                <div class="tier-badge">FAMILY ACCOUNT</div>
-                <div style="margin-top:20px; display:flex; justify-content:center; gap:30px;">
-                    <div><b>120</b><br><span style="font-size:0.7rem; opacity:0.6;">Kazi</span></div>
-                    <div><b>TZS 50k</b><br><span style="font-size:0.7rem; opacity:0.6;">Mapato</span></div>
-                </div>
+                <div class="action-item"><i class="fas fa-play-circle"></i><span>Anza Kazi</span></div>
+                <div class="action-item"><i class="fas fa-upload"></i><span>Submit</span></div>
+                <div class="action-item"><i class="fas fa-info-circle"></i><span>Details</span></div>
             </div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchSection('home', this)"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item" onclick="switchSection('notif', this)"><i class="fas fa-bell"></i>Notif</div>
-        <div class="nav-item" onclick="switchSection('stats', this)"><i class="fas fa-chart-line"></i>Stats</div>
-        <div class="nav-item" onclick="switchSection('profile', this)"><i class="fas fa-user"></i>Profile</div>
+        <a href="#" class="nav-link active"><i class="fas fa-home"></i>Home</a>
+        <a href="notif.html" class="nav-link"><i class="fas fa-bell"></i>Notif</a>
+        <a href="stats.html" class="nav-link"><i class="fas fa-chart-bar"></i>Stats</a>
+        <a href="profile.html" class="nav-link"><i class="fas fa-user-circle"></i>Profile</a>
     </div>
 
-    <script>
-        // Navigation Logic
-        function switchSection(sec, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(sec + '-section').classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-
-            if(sec !== 'home') document.getElementById('home-tabs').style.visibility = "hidden";
-            else document.getElementById('home-tabs').style.visibility = "visible";
-        }
-
-        // Chart.js for Statistics
-        const ctx = document.getElementById('incomeChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Mapato ya Wiki',
-                    data: [1200, 1900, 3000, 500, 2500, 4000, 3200],
-                    borderColor: '#ffc947',
-                    tension: 0.4
-                }]
-            },
-            options: { plugins: { legend: { display: false } } }
-        });
-
-        function withdraw() {
-            alert("Tafadhali weka akaunti ya benki au namba ya simu kwenye Settings kwanza!");
-        }
-    </script>
 </body>
 </html>
