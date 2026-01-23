@@ -2,167 +2,132 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | EMR Money Online</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login | EMR MONEY</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root {
-            --main-blue: #0a1931;
-            --accent-gold: #ffc947;
-            --white: #ffffff;
-            --glass: rgba(255, 255, 255, 0.95);
-        }
+        :root { --main-blue: #0a1931; --accent-gold: #ffc947; --white: #ffffff; }
+        
+        * { box-sizing: border-box; }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            background: linear-gradient(135deg, var(--main-blue) 0%, #162a4d 100%);
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, var(--main-blue) 0%, #162a4d 100%); 
+            margin: 0; 
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            overflow: hidden; /* Inazuia scroll kwenye simu */
         }
 
-        header {
-            text-align: center;
-            padding: 30px 20px;
-        }
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--white);
-            text-decoration: none;
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        .container {
+        .logo-section { text-align: center; padding: 20px 0; color: white; flex-shrink: 0; }
+        .logo { font-size: 1.8rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .container { 
             flex: 1;
-            display: flex;
-            justify-content: center;
+            display: flex; 
+            justify-content: center; 
             align-items: center;
-            padding: 20px;
+            padding: 0 15px 20px 15px;
         }
 
-        .login-card {
-            background: var(--glass);
-            width: 100%;
-            max-width: 400px;
-            padding: 40px;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        .card { 
+            background: #ffffff; 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-top: 4px solid var(--accent-gold);
             text-align: center;
         }
-
-        h2 { color: var(--main-blue); margin-bottom: 10px; }
-        p.subtitle { color: #666; font-size: 0.9rem; margin-bottom: 25px; }
-
-        .form-group {
-            position: relative;
-            margin-bottom: 20px;
-            text-align: left;
+        
+        h2 { color: var(--main-blue); margin: 0 0 10px 0; font-size: 1.5rem; }
+        p.subtitle { color: #666; font-size: 0.85rem; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .input-box { position: relative; }
+        .input-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--main-blue); font-size: 1rem; }
+        
+        input { 
+            width: 100%; 
+            padding: 12px 12px 12px 40px; 
+            border: 1.5px solid #ddd; 
+            border-radius: 12px; 
+            font-size: 0.9rem; 
+            background: #f9f9f9;
         }
-        .form-group i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-        input {
-            width: 100%;
-            padding: 15px 15px 15px 45px;
-            border: 1.5px solid #eee;
-            border-radius: 15px;
-            box-sizing: border-box;
+
+        .btn-login { 
+            width: 100%; padding: 14px; 
+            background: var(--main-blue); color: white; 
+            border: none; border-radius: 12px; 
+            font-weight: 600; cursor: pointer; 
             font-size: 1rem;
-            background: #f8fafc;
-        }
-
-        .options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-            color: #555;
-        }
-        .options a {
-            color: #d35400; /* Rangi ya Forgot Password */
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 16px;
-            background: var(--main-blue);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
             transition: 0.3s;
+            margin-top: 10px;
         }
-        .btn-login:hover {
-            background: #1a3a6e;
-            transform: translateY(-2px);
-        }
+        .btn-login:hover { background: #1a3a6e; transform: translateY(-2px); }
 
-        #status { margin-top: 20px; font-size: 0.9rem; }
+        #status { text-align: center; margin-top: 10px; font-weight: 600; font-size: 0.8rem; }
 
-        .footer-link {
-            margin-top: 25px;
-            font-size: 0.9rem;
-            color: #555;
-        }
-        .footer-link a {
-            color: var(--main-blue);
-            font-weight: 600;
-            text-decoration: none;
-        }
+        .forgot-pass { display: block; margin-top: 15px; font-size: 0.8rem; color: #d35400; text-decoration: none; font-weight: 600; }
+
+        .footer-nav { margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
+        .icons-wrapper { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
+        .social-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; font-size: 0.9rem; }
+        .wa { background: #25D366; } .ig { background: #E1306C; } .tk { background: #000; } .xx { background: #000; } .fb { background: #1877F2; }
+
+        .bottom-text { font-size: 0.8rem; color: #555; }
+        .bottom-text a { color: var(--main-blue); font-weight: 700; text-decoration: none; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">
-            <i class="fas fa-coins" style="color:var(--accent-gold)"></i>
-            <span>EMR MONEY</span>
-        </div>
-    </header>
+    <div class="logo-section">
+        <div class="logo"><i class="fas fa-hand-holding-usd" style="color:var(--accent-gold)"></i> EMR MONEY</div>
+    </div>
 
     <div class="container">
-        <div class="login-card">
+        <div class="card">
             <h2>Karibu Tena</h2>
             <p class="subtitle">Ingia kuendelea na safari yako ya pesa.</p>
             
             <div class="form-group">
-                <i class="fas fa-envelope"></i>
-                <input type="email" id="email" placeholder="Barua Pepe (Email)">
+                <div class="input-box">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Barua Pepe (Email)">
+                </div>
             </div>
 
             <div class="form-group">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="password" placeholder="Neno la Siri">
-            </div>
-
-            <div class="options">
-                <label><input type="checkbox" id="remember"> Remember Me</label>
-                <a href="forgot-password.html">Umesahau Password?</a>
+                <div class="input-box">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Neno la Siri">
+                </div>
             </div>
 
             <button class="btn-login" onclick="handleLogin()">INGIA SASA</button>
             
+            <a href="forgot-password.html" class="forgot-pass">Umesahau Neno la Siri?</a>
+            
             <div id="status"></div>
 
-            <div class="footer-link">
-                Huna akaunti? <a href="index.html">Jisajili Hapa</a>
+            <div class="footer-nav">
+                <div class="icons-wrapper">
+                    <a href="#" class="social-btn wa"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="social-btn ig"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn tk"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" class="social-btn xx"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#" class="social-btn fb"><i class="fab fa-facebook-f"></i></a>
+                </div>
+                <div class="bottom-text">
+                    Huna akaunti bado? <a href="index.html">Jisajili Hapa</a>
+                </div>
             </div>
         </div>
     </div>
@@ -178,12 +143,12 @@
             const status = document.getElementById('status');
 
             if(!email || !password) {
-                status.innerText = "Jaza email na password!";
-                status.style.color = "red";
+                status.innerText = "⚠️ Jaza email na password!";
+                status.style.color = "orange";
                 return;
             }
 
-            status.innerText = "Inahakiki... Tafadhali subiri.";
+            status.innerText = "Inahakiki... Subiri.";
             status.style.color = "blue";
 
             const { data, error } = await _supabase.auth.signInWithPassword({
@@ -192,12 +157,11 @@
             });
 
             if (error) {
-                status.innerText = "Kosa: " + error.message;
+                status.innerText = "❌ Kosa: " + error.message;
                 status.style.color = "red";
             } else {
-                status.innerText = "Login imefanikiwa! Unapelekwa kwenye Dashboard...";
+                status.innerText = "✅ Login Imefanikiwa!";
                 status.style.color = "green";
-                // Inampeleka Dashboard baada ya sekunde 1.5
                 setTimeout(() => {
                     window.location.href = "dashboard.html";
                 }, 1500);
