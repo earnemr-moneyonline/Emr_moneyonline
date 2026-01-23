@@ -11,46 +11,42 @@
 
     <style>
         :root { --main-blue: #0a1931; --accent-gold: #ffc947; --white: #ffffff; }
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--main-blue) 0%, #162a4d 100%); margin: 0; padding-bottom: 80px; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--main-blue) 0%, #162a4d 100%); margin: 0; padding-bottom: 50px; }
         
         .logo-section { text-align: center; padding: 25px; color: white; }
-        .logo { font-size: 2.2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .logo { font-size: 2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
         
         .container { display: flex; justify-content: center; padding: 0 15px; }
-        .card { background: #ffffff; width: 100%; max-width: 450px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border-top: 5px solid var(--accent-gold); }
+        .card { background: #ffffff; width: 100%; max-width: 450px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         
-        h2 { color: var(--main-blue); text-align: center; margin-bottom: 15px; font-weight: 600; }
-        
+        h2 { color: var(--main-blue); text-align: center; margin-bottom: 15px; }
         .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 0.75rem; margin-bottom: 4px; color: #444; font-weight: 600; }
-        
         .input-box { position: relative; }
-        .input-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--main-blue); font-size: 1rem; }
+        .input-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--main-blue); }
         
-        input, select { width: 100%; padding: 12px 12px 12px 40px; border: 1.5px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 0.9rem; transition: 0.3s; }
-        input:focus { border-color: var(--accent-gold); outline: none; box-shadow: 0 0 5px rgba(255, 201, 71, 0.4); }
+        input, select { width: 100%; padding: 12px 12px 12px 40px; border: 1.5px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 0.9rem; }
         
-        .phone-row { display: flex; gap: 5px; }
-        .country-code { width: 115px; padding-left: 10px !important; background: #f9f9f9; }
+        /* Captcha Styling */
+        .captcha-box { background: #eee; padding: 10px; border-radius: 10px; margin: 10px 0; display: flex; align-items: center; justify-content: space-between; border: 1px solid #ccc; }
+        #captcha-display { font-weight: bold; font-size: 1.3rem; color: #d35400; letter-spacing: 5px; user-select: none; pointer-events: none; }
         
-        /* Captcha */
-        .captcha-box { background: #f0f4f8; padding: 12px; border-radius: 10px; margin: 15px 0; display: flex; align-items: center; justify-content: space-around; border: 1px dashed var(--main-blue); }
-        #captcha-display { font-family: 'Courier New', Courier, monospace; font-weight: 800; font-size: 1.3rem; color: #d35400; letter-spacing: 4px; text-decoration: line-through; }
-        
-        .btn-signup { width: 100%; padding: 14px; background: var(--main-blue); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .btn-signup:hover { background: #1a3a6e; transform: scale(1.01); }
+        /* Policy Checkbox */
+        .policy-group { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; font-size: 0.8rem; color: #444; text-align: left; }
+        .policy-group input { width: auto; margin-top: 3px; cursor: pointer; }
+        .policy-group a { color: var(--main-blue); font-weight: 600; text-decoration: none; }
 
-        /* Social Icons Footer Section */
-        .social-footer { margin-top: 30px; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
-        .social-footer p { font-size: 0.8rem; color: #666; margin-bottom: 12px; }
-        .icons-wrapper { display: flex; justify-content: center; gap: 15px; }
-        .social-btn { width: 45px; height: 45px; background: var(--main-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.2rem; transition: 0.3s; }
-        .social-btn.wa { background: #25D366; }
-        .social-btn.tg { background: #0088cc; }
-        .social-btn.ig { background: #E1306C; }
-        .social-btn:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-signup { width: 100%; padding: 15px; background: var(--main-blue); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.3s; }
+        .btn-signup.active { opacity: 1; pointer-events: auto; }
 
-        #status { text-align: center; margin-top: 10px; font-size: 0.8rem; font-weight: 600; }
+        .gmail-btn { display: none; margin-top: 15px; background: #db4437; color: white; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 600; }
+
+        /* Social Icons */
+        .social-footer { margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
+        .icons-wrapper { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+        .social-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; font-size: 1.1rem; }
+        .wa { background: #25D366; } .ig { background: #E1306C; } .tk { background: #000; } .xx { background: #000; } .fb { background: #1877F2; }
+
+        #status { text-align: center; margin-top: 10px; font-weight: 600; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -61,71 +57,39 @@
 
     <div class="container">
         <div class="card">
-            <h2>Fungua Akaunti</h2>
+            <h2>Unda Akaunti</h2>
             
-            <div class="form-group">
-                <label>Jina Kamili</label>
-                <div class="input-box">
-                    <i class="fas fa-user-circle"></i>
-                    <input type="text" id="full_name" placeholder="Andika Jina lako kamili">
-                </div>
+            <div class="form-group"><div class="input-box"><i class="fas fa-user"></i><input type="text" id="full_name" placeholder="Jina Kamili"></div></div>
+            <div class="form-group"><div class="input-box"><i class="fas fa-envelope"></i><input type="email" id="email" placeholder="Email (Barua Pepe)"></div></div>
+            
+            <div class="form-group" style="display:flex; gap:5px;">
+                <select id="country-code" style="width:110px; padding-left:10px;"><option value="+255">🇹🇿 +255</option><option value="+254">🇰🇪 +254</option><option value="+256">🇺🇬 +256</option></select>
+                <input type="tel" id="phone" placeholder="Namba ya Simu" style="padding-left:10px;">
             </div>
 
-            <div class="form-group">
-                <label>Barua Pepe (Email)</label>
-                <div class="input-box">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" placeholder="mfano@gmail.com">
-                </div>
+            <div class="form-group"><div class="input-box"><i class="fas fa-lock"></i><input type="password" id="pass" placeholder="Password"></div></div>
+            <div class="form-group"><div class="input-box"><i class="fas fa-check-double"></i><input type="password" id="confirm_pass" placeholder="Rudia Password"></div></div>
+
+            <div class="captcha-box"><span id="captcha-display"></span><input type="text" id="captcha-input" placeholder="Weka kodi" style="width:100px; padding:8px;"></div>
+
+            <div class="policy-group">
+                <input type="checkbox" id="policy-check" onchange="toggleBtn()">
+                <span>Nimekubali <a href="policy.html" target="_blank">Masharti (Policy)</a> na <a href="services.html" target="_blank">Huduma (Services)</a> za EMR MONEY.</span>
             </div>
 
-            <div class="form-group">
-                <label>Namba ya Simu</label>
-                <div class="phone-row">
-                    <select id="country-code" class="country-code">
-                        <option value="+255">🇹🇿 +255</option>
-                        <option value="+254">🇰🇪 +254</option>
-                        <option value="+256">🇺🇬 +256</option>
-                        <option value="+250">🇷🇼 +250</option>
-                        <option value="+260">🇿🇲 +260</option>
-                    </select>
-                    <input type="tel" id="phone" placeholder="712345678" style="padding-left: 10px;">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Neno la Siri (Password)</label>
-                <div class="input-box">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Weka password">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Thibitisha Neno la Siri</label>
-                <div class="input-box">
-                    <i class="fas fa-check-double"></i>
-                    <input type="password" id="confirm_password" placeholder="Rudia password">
-                </div>
-            </div>
-
-            <div class="captcha-box">
-                <span id="captcha-display"></span>
-                <input type="text" id="captcha-input" placeholder="Weka kodi" style="width: 100px; padding: 8px;">
-            </div>
-
-            <button class="btn-signup" onclick="handleSignUp()">JISAJILI SASA</button>
+            <button id="signup-btn" class="btn-signup" onclick="handleSignUp()">JISAJILI SASA</button>
+            <center><a id="gmail-link" href="https://mail.google.com/" class="gmail-btn" target="_blank"><i class="fab fa-google"></i> FUNGUA GMAIL KU-VERIFY</a></center>
+            
             <div id="status"></div>
 
             <div class="social-footer">
-                <p>Fuatilia Akaunti Zetu za EMR kwa Msaada:</p>
+                <p style="font-size:0.75rem; color:#666;">Fuatilia akaunti zetu:</p>
                 <div class="icons-wrapper">
-                    <a href="https://wa.me/255XXXXXXXXX" class="social-btn wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                    <a href="https://t.me/youraccount" class="social-btn tg" title="Telegram"><i class="fab fa-telegram-plane"></i></a>
-                    <a href="https://instagram.com/emrmoney" class="social-btn ig" title="Instagram"><i class="fab fa-instagram"></i></a>
-                </div>
-                <div style="margin-top: 15px; font-size: 0.8rem;">
-                    Tayari unayo akaunti? <a href="login.html" style="color:var(--main-blue); font-weight:bold;">Ingia</a>
+                    <a href="#" class="social-btn wa"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="social-btn ig"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn tk"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" class="social-btn xx"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#" class="social-btn fb"><i class="fab fa-facebook-f"></i></a>
                 </div>
             </div>
         </div>
@@ -137,45 +101,43 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let captchaCode = "";
-        function generateCaptcha() {
+        function genCaptcha() {
             captchaCode = Math.random().toString(36).substring(2, 7).toUpperCase();
             document.getElementById('captcha-display').innerText = captchaCode;
         }
-        generateCaptcha();
+        genCaptcha();
+
+        function toggleBtn() {
+            const check = document.getElementById('policy-check');
+            const btn = document.getElementById('signup-btn');
+            if(check.checked) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
 
         async function handleSignUp() {
             const name = document.getElementById('full_name').value;
             const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const country = document.getElementById('country-code').value;
-            const pass = document.getElementById('password').value;
-            const confirm = document.getElementById('confirm_password').value;
+            const pass = document.getElementById('pass').value;
+            const confirm = document.getElementById('confirm_pass').value;
             const captchaInput = document.getElementById('captcha-input').value;
             const status = document.getElementById('status');
 
-            if(!name || !email || !phone || !pass) {
-                status.innerText = "⚠️ Jaza nafasi zote!"; status.style.color = "orange"; return;
-            }
-            if(pass !== confirm) {
-                status.innerText = "❌ Password hazifanani!"; status.style.color = "red"; return;
-            }
-            if(captchaInput.toUpperCase() !== captchaCode) {
-                status.innerText = "❌ Kodi ya Robot siyo sahihi!"; status.style.color = "red";
-                generateCaptcha(); return;
-            }
+            if(pass !== confirm) { status.innerText = "❌ Password hazifanani!"; status.style.color="red"; return; }
+            if(captchaInput.toUpperCase() !== captchaCode) { status.innerText = "❌ Captcha ni makosa!"; genCaptcha(); return; }
 
-            status.innerText = "Inatengeneza akaunti..."; status.style.color = "blue";
+            status.innerText = "Inasindika..."; status.style.color="blue";
 
             const { data, error } = await _supabase.auth.signUp({
                 email: email, password: pass,
-                options: { data: { full_name: name, phone: country + phone } }
+                options: { data: { full_name: name } }
             });
 
-            if (error) {
-                status.innerText = "Error: " + error.message; status.style.color = "red";
-            } else {
-                status.innerText = "✅ Usajili umekamilika! Karibu."; status.style.color = "green";
-                setTimeout(() => { window.location.href = "login.html"; }, 1500);
+            if(error) { status.innerText = "Error: " + error.message; status.style.color="red"; }
+            else {
+                status.innerText = "✅ Umefanikiwa! Fungua Gmail sasa u-verify akaunti yako.";
+                status.style.color="green";
+                document.getElementById('gmail-link').style.display = "block";
+                document.getElementById('signup-btn').style.display = "none";
             }
         }
     </script>
