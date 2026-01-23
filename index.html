@@ -2,8 +2,8 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMR MONEY | Usajili Rasmi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login | EMR MONEY</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -11,62 +11,79 @@
 
     <style>
         :root { --main-blue: #0a1931; --accent-gold: #ffc947; --white: #ffffff; }
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--main-blue) 0%, #162a4d 100%); margin: 0; padding-bottom: 50px; }
         
-        .logo-section { text-align: center; padding: 25px; color: white; }
-        .logo { font-size: 2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        .container { display: flex; justify-content: center; padding: 0 15px; }
-        .card { background: #ffffff; width: 100%; max-width: 450px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        
-        h2 { color: var(--main-blue); text-align: center; margin-bottom: 15px; }
-        .form-group { margin-bottom: 12px; }
-        .input-box { position: relative; }
-        .input-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--main-blue); }
-        
-        input, select { width: 100%; padding: 12px 12px 12px 40px; border: 1.5px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 0.9rem; }
-        
-        /* High-Security Captcha Styling */
-        .captcha-wrapper {
-            background: #e0e0e0;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, var(--main-blue) 0%, #162a4d 100%); 
+            margin: 0; 
+            height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 2px solid #bbb;
-            position: relative;
-            overflow: hidden;
+            flex-direction: column;
+            overflow: hidden; /* Inazuia scroll kwenye simu */
         }
-        #captcha-display { 
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: 900; 
-            font-size: 1.5rem; 
-            color: #222; 
-            letter-spacing: 6px; 
-            user-select: none;
-            font-style: italic;
-            text-decoration: line-through;
-            background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px);
+
+        .logo-section { text-align: center; padding: 20px 0; color: white; flex-shrink: 0; }
+        .logo { font-size: 1.8rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .container { 
+            flex: 1;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            padding: 0 15px 20px 15px;
+        }
+
+        .card { 
+            background: #ffffff; 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-top: 4px solid var(--accent-gold);
+            text-align: center;
         }
         
-        .policy-group { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; font-size: 0.8rem; color: #444; }
-        .policy-group input { width: auto; margin-top: 3px; cursor: pointer; }
-        .policy-group a { color: var(--main-blue); font-weight: 600; text-decoration: none; }
+        h2 { color: var(--main-blue); margin: 0 0 10px 0; font-size: 1.5rem; }
+        p.subtitle { color: #666; font-size: 0.85rem; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .input-box { position: relative; }
+        .input-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--main-blue); font-size: 1rem; }
+        
+        input { 
+            width: 100%; 
+            padding: 12px 12px 12px 40px; 
+            border: 1.5px solid #ddd; 
+            border-radius: 12px; 
+            font-size: 0.9rem; 
+            background: #f9f9f9;
+        }
 
-        .btn-signup { width: 100%; padding: 15px; background: var(--main-blue); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.3s; }
-        .btn-signup.active { opacity: 1; pointer-events: auto; }
+        .btn-login { 
+            width: 100%; padding: 14px; 
+            background: var(--main-blue); color: white; 
+            border: none; border-radius: 12px; 
+            font-weight: 600; cursor: pointer; 
+            font-size: 1rem;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-login:hover { background: #1a3a6e; transform: translateY(-2px); }
 
-        .app-link-container { display: none; margin-top: 15px; text-align: center; }
-        .gmail-app-btn { background: #db4437; color: white; padding: 14px 20px; border-radius: 30px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow: 0 4px 12px rgba(219,68,55,0.4); }
+        #status { text-align: center; margin-top: 10px; font-weight: 600; font-size: 0.8rem; }
 
-        .social-footer { margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
-        .icons-wrapper { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .social-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; font-size: 1rem; transition: 0.3s; }
+        .forgot-pass { display: block; margin-top: 15px; font-size: 0.8rem; color: #d35400; text-decoration: none; font-weight: 600; }
+
+        .footer-nav { margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
+        .icons-wrapper { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
+        .social-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; font-size: 0.9rem; }
         .wa { background: #25D366; } .ig { background: #E1306C; } .tk { background: #000; } .xx { background: #000; } .fb { background: #1877F2; }
 
-        #status { text-align: center; margin-top: 10px; font-weight: 600; font-size: 0.85rem; }
+        .bottom-text { font-size: 0.8rem; color: #555; }
+        .bottom-text a { color: var(--main-blue); font-weight: 700; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -77,62 +94,39 @@
 
     <div class="container">
         <div class="card">
-            <h2>Unda Akaunti</h2>
+            <h2>Karibu Tena</h2>
+            <p class="subtitle">Ingia kuendelea na safari yako ya pesa.</p>
             
-            <div class="form-group"><div class="input-box"><i class="fas fa-user"></i><input type="text" id="full_name" placeholder="Jina Kamili"></div></div>
-            <div class="form-group"><div class="input-box"><i class="fas fa-envelope"></i><input type="email" id="email" placeholder="Email (Barua Pepe)"></div></div>
+            <div class="form-group">
+                <div class="input-box">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Barua Pepe (Email)">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-box">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Neno la Siri">
+                </div>
+            </div>
+
+            <button class="btn-login" onclick="handleLogin()">INGIA SASA</button>
             
-            <div class="form-group" style="display:flex; gap:5px;">
-                <select id="country-code" style="width:130px; padding-left:10px;">
-                    <option value="+255">🇹🇿 +255</option>
-                    <option value="+254">🇰🇪 +254</option>
-                    <option value="+256">🇺🇬 +256</option>
-                    <option value="+250">🇷🇼 +250</option>
-                    <option value="+257">🇧🇮 +257</option>
-                    <option value="+260">🇿🇲 +260</option>
-                    <option value="+263">🇿🇼 +263</option>
-                    <option value="+265">🇲🇼 +265</option>
-                    <option value="+251">🇪🇹 +251</option>
-                    <option value="+252">🇸🇴 +252</option>
-                    <option value="+211">🇸🇸 +211</option>
-                    <option value="+243">🇨🇩 +243</option>
-                </select>
-                <input type="tel" id="phone" placeholder="712 345 678" style="padding-left:10px;">
-            </div>
-
-            <div class="form-group"><div class="input-box"><i class="fas fa-lock"></i><input type="password" id="pass" placeholder="Password"></div></div>
-            <div class="form-group"><div class="input-box"><i class="fas fa-check-double"></i><input type="password" id="confirm_pass" placeholder="Thibitisha Password"></div></div>
-
-            <div class="captcha-wrapper">
-                <span id="captcha-display"></span>
-                <input type="text" id="captcha-input" placeholder="Weka kodi" style="width:110px; padding:8px;">
-            </div>
-
-            <div class="policy-group">
-                <input type="checkbox" id="policy-check" onchange="toggleBtn()">
-                <span>Nimekubali <a href="policy.html">Policy</a> na <a href="services.html">Services</a> za EMR.</span>
-            </div>
-
-            <button id="signup-btn" class="btn-signup" onclick="handleSignUp()">JISAJILI SASA</button>
-            
-            <div class="app-link-container" id="app-link-box">
-                <a href="googlegmail://" id="gmail-app" class="gmail-app-btn"><i class="fas fa-envelope-open-text"></i> FUNGUA GMAIL APP</a>
-                <p style="font-size:0.7rem; color:#666; margin-top:5px;">Bofya hapo juu kuthibitisha sasa hivi!</p>
-            </div>
+            <a href="forgot-password.html" class="forgot-pass">Umesahau Neno la Siri?</a>
             
             <div id="status"></div>
 
-            <div style="text-align: center; margin-top: 15px; font-size: 0.85rem;">
-                Tayari unayo akaunti? <a href="login.html" style="color:var(--main-blue); font-weight:700; text-decoration:none;">Ingia Hapa</a>
-            </div>
-
-            <div class="social-footer">
+            <div class="footer-nav">
                 <div class="icons-wrapper">
                     <a href="#" class="social-btn wa"><i class="fab fa-whatsapp"></i></a>
                     <a href="#" class="social-btn ig"><i class="fab fa-instagram"></i></a>
                     <a href="#" class="social-btn tk"><i class="fab fa-tiktok"></i></a>
                     <a href="#" class="social-btn xx"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" class="social-btn fb"><i class="fab fa-facebook-f"></i></a>
+                </div>
+                <div class="bottom-text">
+                    Huna akaunti bado? <a href="index.html">Jisajili Hapa</a>
                 </div>
             </div>
         </div>
@@ -143,59 +137,34 @@
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let captchaCode = "";
-        function genCaptcha() {
-            const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // Hakuna 0, 1, O, I ili kuzuia kuchanganya
-            captchaCode = "";
-            for (let i = 0; i < 6; i++) {
-                captchaCode += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            document.getElementById('captcha-display').innerText = captchaCode;
-        }
-        genCaptcha();
-
-        function toggleBtn() {
-            const check = document.getElementById('policy-check');
-            const btn = document.getElementById('signup-btn');
-            if(check.checked) btn.classList.add('active');
-            else btn.classList.remove('active');
-        }
-
-        async function handleSignUp() {
-            const name = document.getElementById('full_name').value;
+        async function handleLogin() {
             const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            const confirm = document.getElementById('confirm_pass').value;
-            const captchaInput = document.getElementById('captcha-input').value;
+            const password = document.getElementById('password').value;
             const status = document.getElementById('status');
 
-            if(pass !== confirm) { status.innerText = "❌ Password hazifanani!"; status.style.color="red"; return; }
-            if(captchaInput.toUpperCase() !== captchaCode) { 
-                status.innerText = "❌ Kodi ya Robot ni makosa!"; 
-                status.style.color="red";
-                genCaptcha(); 
-                return; 
+            if(!email || !password) {
+                status.innerText = "⚠️ Jaza email na password!";
+                status.style.color = "orange";
+                return;
             }
 
-            status.innerText = "Tunaandaa akaunti yako..."; status.style.color="blue";
+            status.innerText = "Inahakiki... Subiri.";
+            status.style.color = "blue";
 
-            const { data, error } = await _supabase.auth.signUp({
-                email: email, password: pass,
-                options: { data: { full_name: name }, emailRedirectTo: window.location.origin + '/Emr_moneyonline/login.html' }
+            const { data, error } = await _supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
             });
 
-            if(error) { 
-                status.innerText = "Error: " + error.message; status.style.color="red"; 
+            if (error) {
+                status.innerText = "❌ Kosa: " + error.message;
+                status.style.color = "red";
             } else {
-                status.innerText = "✅ Imefanikiwa! Fungua Gmail yako sasa.";
-                status.style.color="green";
-                document.getElementById('signup-btn').style.display = "none";
-                document.getElementById('app-link-box').style.display = "block";
-                
-                // Jaribu kufungua Gmail App baada ya sekunde 2 moja kwa moja
+                status.innerText = "✅ Login Imefanikiwa!";
+                status.style.color = "green";
                 setTimeout(() => {
-                    window.location.href = "googlegmail://";
-                }, 2000);
+                    window.location.href = "dashboard.html";
+                }, 1500);
             }
         }
     </script>
