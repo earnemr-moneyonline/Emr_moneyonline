@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | EMR MONEY</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+            background: linear-gradient(-45deg, #000000, #1a1a1a, #2c2c2c, #0a0a0a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .step { display: none; animation: fadeIn 0.8s ease; }
+        .step.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { font-weight: 300; font-size: 1.5rem; color: #ffc947; }
+        .question { font-size: 1.2rem; margin: 30px 0; min-height: 80px; font-weight: 400; line-height: 1.6; }
+        .progress { font-size: 0.8rem; opacity: 0.5; margin-top: 20px; }
+
+        .btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            margin: 5px;
+        }
+        .btn:hover { background: white; color: black; border-color: white; }
+
+        .role-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.3s;
+            text-align: left;
+        }
+        .role-card:hover { background: rgba(255,201,71,0.1); border-color: #ffc947; }
+        .role-card h3 { margin: 0; color: #ffc947; }
+        .role-card p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="step active" id="step0">
+            <h1 id="user-name">...</h1>
+            <p class="question">Tayari umeanza safari ya kubadilisha maisha yako ya kidijitali. Tuko hapa kuhakikisha unavuka upande wa pili.</p>
+            <button class="btn" onclick="nextStep(1)">Tuanze Safari</button>
+        </div>
+
+        <div id="questions-container"></div>
+
+        <div class="step" id="final-step">
+            <h1>Hatua ya Mwisho</h1>
+            <p style="font-size: 0.9rem; margin-bottom: 20px;">Ili kukuandalia Dashboard yako, tusaidie kujua unakuja hapa kama nani?</p>
+            
+            <div class="role-card" onclick="setRole('merchant')">
+                <h3>Mfanyabiashara Pro</h3>
+                <p>Natafuta Followers, Likes, Wateja, na kukuza Brand yangu mtandaoni.</p>
+            </div>
+
+            <div class="role-card" onclick="setRole('client')">
+                <h3>Mteja (Freelancer)</h3>
+                <p>Natafuta fursa, kukamilisha kazi za kijanja na kupata huduma bora.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const maswali = [
+            "Je, unaamini kuwa dakika 10 za mtandao zinaweza kukulipa zaidi ya saa 8 za ofisini?",
+            "Je, umechoka kuona wengine wakipata 'Likes' na 'Followers' huku wewe ukiwa mtazamaji?",
+            "Uliwahi kufikiria kuwa simu yako ndiyo duka lako kubwa zaidi ambalo bado hujalifungua?",
+            "Je, uko tayari kuacha kufanya kazi kwa bidii na kuanza kufanya kazi kwa akili?",
+            "Je, unajua kuwa kuna maelfu ya watu wanatafuta kile ulichonacho sasa hivi?",
+            "Je, uko tayari kuungana na jamii inayojua siri ya kutengeneza ushawishi mtandaoni?",
+            "Umejiandaa kuona jina lako likikua na kuwa Brand kubwa hapa EMR?",
+            "Je, unakubali kuwa nidhamu ya kidijitali ndiyo ufunguo wa uhuru wa kifedha?",
+            "Je, uko tayari kufuata maelekezo yatakayokupa matokeo ndani ya muda mfupi?",
+            "Swali la mwisho: Je, uko tayari kuanza sasa hivi bila kutazama nyuma?"
+        ];
+
+        let current = 0;
+
+        async function init() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) { window.location.href = 'login.html'; return; }
+            
+            // Angalia kama tayari ana Role (Kama anayo, mpeleke Dashboard moja kwa moja)
+            if(user.user_metadata.role) {
+                redirectUser(user.user_metadata.role);
+            }
+
+            document.getElementById('user-name').innerText = user.user_metadata.full_name;
+
+            // Tengeneza HTML ya maswali
+            let html = '';
+            maswali.forEach((q, i) => {
+                html += `
+                <div class="step" id="step${i+1}">
+                    <p class="question">"${q}"</p>
+                    <button class="btn" onclick="nextStep(${i+2})">Ndiyo, Niko Tayari</button>
+                    <div class="progress">Swali ${i+1} kati ya 10</div>
+                </div>`;
+            });
+            document.getElementById('questions-container').innerHTML = html;
+        }
+
+        function nextStep(s) {
+            document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
+            if(s > 10) {
+                document.getElementById('final-step').classList.add('active');
+            } else {
+                document.getElementById('step' + s).classList.add('active');
+            }
+        }
+
+        async function setRole(r) {
+            const { error } = await _supabase.auth.updateUser({
+                data: { role: r }
+            });
+
+            if (!error) { redirectUser(r); }
+        }
+
+        function redirectUser(role) {
+            if(role === 'merchant') window.location.href = 'merchant_dashboard.html';
+            else window.location.href = 'client_dashboard.html';
+        }
+
+        init();
+    </script>
+</body>
+</html>
