@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Pro | EMR MONEY</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --main-dark: #050a14; --accent-gold: #ffc947; --glass: rgba(255, 255, 255, 0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--main-dark); color: white; padding-bottom: 80px; }
+
+        .header { padding: 25px 20px; background: linear-gradient(to bottom, #0a1931, var(--main-dark)); text-align: left; }
+        .header h1 { font-size: 1.5rem; color: var(--accent-gold); }
+
+        /* Wallet Section */
+        .wallet-card {
+            margin: -30px 20px 20px 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 25px; border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .balance-info p { font-size: 0.8rem; opacity: 0.8; }
+        .balance-info h2 { font-size: 1.8rem; }
+        .btn-deposit { background: var(--accent-gold); border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+
+        /* Quick Actions */
+        .section-title { padding: 0 20px; font-size: 1rem; margin-bottom: 15px; color: #aaa; }
+        .actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px; }
+        .action-card { 
+            background: var(--glass); padding: 20px; border-radius: 15px; 
+            border: 1px solid rgba(255,255,255,0.1); text-align: center;
+            transition: 0.3s;
+        }
+        .action-card:active { transform: scale(0.95); background: rgba(255,201,71,0.1); }
+        .action-card i { font-size: 1.8rem; color: var(--accent-gold); margin-bottom: 10px; }
+        .action-card p { font-size: 0.85rem; }
+
+        /* Recent Campaigns */
+        .campaigns-list { padding: 0 20px; margin-top: 30px; }
+        .campaign-item {
+            background: var(--glass); padding: 15px; border-radius: 15px;
+            display: flex; align-items: center; gap: 15px; margin-bottom: 10px;
+            border-left: 4px solid var(--accent-gold);
+        }
+        .campaign-item img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
+        .camp-info { flex: 1; }
+        .camp-info h4 { font-size: 0.9rem; margin-bottom: 3px; }
+        .camp-info p { font-size: 0.7rem; opacity: 0.6; }
+        .status-badge { font-size: 0.65rem; background: #27ae60; padding: 3px 8px; border-radius: 5px; }
+
+        /* Floating Post Button */
+        .btn-post {
+            position: fixed; bottom: 90px; right: 20px;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--accent-gold); color: #000;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 5px 20px rgba(255,201,71,0.4);
+            font-size: 1.5rem; z-index: 999;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 70px;
+            background: #000; display: flex; justify-content: space-around;
+            align-items: center; border-top: 0.5px solid #222;
+        }
+        .nav-item { text-align: center; color: #666; font-size: 0.7rem; cursor: pointer; }
+        .nav-item.active { color: var(--accent-gold); }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <p style="opacity: 0.7;">Habari, Merchant</p>
+        <h1>EMR Business Pro</h1>
+    </div>
+
+    <div class="wallet-card">
+        <div class="balance-info">
+            <p>Salio la Matangazo</p>
+            <h2 id="merchant-balance">TZS 85,000</h2>
+        </div>
+        <button class="btn-deposit" onclick="topUp()">WEKA PESA</button>
+    </div>
+
+    <p class="section-title">Huduma za Haraka</p>
+    <div class="actions-grid">
+        <div class="action-card" onclick="openPostModal('Social Media Boost')">
+            <i class="fab fa-instagram"></i>
+            <p>Social Boost</p>
+        </div>
+        <div class="action-card" onclick="openPostModal('Website Traffic')">
+            <i class="fas fa-globe"></i>
+            <p>Web Traffic</p>
+        </div>
+        <div class="action-card" onclick="openPostModal('Review & Comments')">
+            <i class="fas fa-star"></i>
+            <p>Reviews</p>
+        </div>
+        <div class="action-card" onclick="location.href='orders.html'">
+            <i class="fas fa-tasks"></i>
+            <p>Manage Orders</p>
+        </div>
+    </div>
+
+    <div class="campaigns-list">
+        <p class="section-title">Kampeni Zako (Active)</p>
+        <div class="campaign-item">
+            <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7" alt="Campaign">
+            <div class="camp-info">
+                <h4>TikTok Followers Boost</h4>
+                <p>Oda: 500 | Imekamilika: 120</p>
+            </div>
+            <span class="status-badge">Inaendelea</span>
+        </div>
+    </div>
+
+    <a href="create_job.html" class="btn-post"><i class="fas fa-plus"></i></a>
+
+    <div class="bottom-nav">
+        <div class="nav-item active"><i class="fas fa-chart-line"></i>Ads</div>
+        <div class="nav-item" onclick="location.href='merchant_orders.html'"><i class="fas fa-list-check"></i>Oda</div>
+        <div class="nav-item"><i class="fas fa-wallet"></i>Wallet</div>
+        <div class="nav-item" onclick="location.href='settings.html'"><i class="fas fa-user-tie"></i>Profile</div>
+    </div>
+
+    <script>
+        function topUp() {
+            alert("Utatumiwa namba ya malipo ya TigoPesa/M-Pesa sasa hivi.");
+        }
+        function openPostModal(type) {
+            alert("Unafungua sehemu ya kupost kampeni ya: " + type);
+            // Hapa tuta-redirect kwenda create_job.html?type=...
+        }
+    </script>
+</body>
+</html>
