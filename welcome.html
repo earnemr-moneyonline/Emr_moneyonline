@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome | EMR MONEY</title>
+    <title>Journey | EMR MONEY</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -15,87 +15,93 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
+            color: #ffffff;
             overflow: hidden;
-            background: linear-gradient(-45deg, #000000, #1a1a1a, #2c2c2c, #0a0a0a);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            /* Background Nyeusi mpauko inayochanganyika na nyeupe nzuri */
+            background: radial-gradient(circle, #2c3e50, #000000, #1a1a1a);
+            background-size: 200% 200%;
+            animation: moveBG 10s ease infinite;
         }
 
-        @keyframes gradientBG {
+        @keyframes moveBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
         .container {
-            width: 90%;
-            max-width: 500px;
+            width: 85%;
+            max-width: 600px;
             text-align: center;
             padding: 20px;
+            position: relative;
         }
 
-        .step { display: none; animation: fadeIn 0.8s ease; }
+        .step { 
+            display: none; 
+            animation: smoothFade 1.5s ease-in-out;
+        }
         .step.active { display: block; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        h1 { font-weight: 300; font-size: 1.5rem; color: #ffc947; }
-        .question { font-size: 1.2rem; margin: 30px 0; min-height: 80px; font-weight: 400; line-height: 1.6; }
-        .progress { font-size: 0.8rem; opacity: 0.5; margin-top: 20px; }
-
-        .btn {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.3s;
-            margin: 5px;
+        @keyframes smoothFade { 
+            0% { opacity: 0; transform: scale(0.95); } 
+            100% { opacity: 1; transform: scale(1); } 
         }
-        .btn:hover { background: white; color: black; border-color: white; }
 
+        .user-name { color: #ffc947; font-weight: 600; font-size: 1.1rem; margin-bottom: 10px; display: block; }
+        .question-text { 
+            font-size: 1.3rem; 
+            font-weight: 300; 
+            line-height: 1.8; 
+            color: #f1f1f1;
+            min-height: 120px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #ffc947;
+            width: 0%;
+            transition: width 0.3s linear;
+        }
+
+        /* Role Selection Styles */
+        .role-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .role-card {
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
+            background: rgba(255,255,255,0.08);
+            padding: 25px;
             border-radius: 15px;
-            margin: 15px 0;
             cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.3s;
-            text-align: left;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: 0.4s;
+            text-align: center;
         }
-        .role-card:hover { background: rgba(255,201,71,0.1); border-color: #ffc947; }
-        .role-card h3 { margin: 0; color: #ffc947; }
-        .role-card p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.8; }
+        .role-card:hover { 
+            background: rgba(255, 201, 71, 0.15); 
+            border-color: #ffc947; 
+            transform: translateY(-5px);
+        }
+        .role-card h3 { margin: 0; color: #ffc947; font-size: 1.4rem; }
+        .role-card p { margin: 10px 0 0; font-size: 0.9rem; color: #ddd; }
+
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="step active" id="step0">
-            <h1 id="user-name">...</h1>
-            <p class="question">Tayari umeanza safari ya kubadilisha maisha yako ya kidijitali. Tuko hapa kuhakikisha unavuka upande wa pili.</p>
-            <button class="btn" onclick="nextStep(1)">Tuanze Safari</button>
+        <div id="content-area">
+            <p style="opacity: 0.5;">Inapakia safari yako...</p>
         </div>
-
-        <div id="questions-container"></div>
-
-        <div class="step" id="final-step">
-            <h1>Hatua ya Mwisho</h1>
-            <p style="font-size: 0.9rem; margin-bottom: 20px;">Ili kukuandalia Dashboard yako, tusaidie kujua unakuja hapa kama nani?</p>
-            
-            <div class="role-card" onclick="setRole('merchant')">
-                <h3>Mfanyabiashara Pro</h3>
-                <p>Natafuta Followers, Likes, Wateja, na kukuza Brand yangu mtandaoni.</p>
-            </div>
-
-            <div class="role-card" onclick="setRole('client')">
-                <h3>Mteja (Freelancer)</h3>
-                <p>Natafuta fursa, kukamilisha kazi za kijanja na kupata huduma bora.</p>
-            </div>
+        
+        <div class="progress-bar" id="p-bar" style="display:none;">
+            <div class="progress-fill" id="p-fill"></div>
         </div>
     </div>
 
@@ -104,55 +110,81 @@
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const maswali = [
-            "Je, unaamini kuwa dakika 10 za mtandao zinaweza kukulipa zaidi ya saa 8 za ofisini?",
-            "Je, umechoka kuona wengine wakipata 'Likes' na 'Followers' huku wewe ukiwa mtazamaji?",
-            "Uliwahi kufikiria kuwa simu yako ndiyo duka lako kubwa zaidi ambalo bado hujalifungua?",
-            "Je, uko tayari kuacha kufanya kazi kwa bidii na kuanza kufanya kazi kwa akili?",
-            "Je, unajua kuwa kuna maelfu ya watu wanatafuta kile ulichonacho sasa hivi?",
-            "Je, uko tayari kuungana na jamii inayojua siri ya kutengeneza ushawishi mtandaoni?",
-            "Umejiandaa kuona jina lako likikua na kuwa Brand kubwa hapa EMR?",
-            "Je, unakubali kuwa nidhamu ya kidijitali ndiyo ufunguo wa uhuru wa kifedha?",
-            "Je, uko tayari kufuata maelekezo yatakayokupa matokeo ndani ya muda mfupi?",
-            "Swali la mwisho: Je, uko tayari kuanza sasa hivi bila kutazama nyuma?"
-        ];
+        let userName = "";
+        let currentIdx = 0;
 
-        let current = 0;
+        const maswali = [
+            "Je, unajua kuwa ulimwengu wa kidijitali unatoa fursa sawa kwa kila mtu mwenye uthubutu kama wewe?",
+            "Je, uko tayari kuona namba za wafuasi na ushawishi wako zikikua kwa kasi kubwa kuliko ulivyowahi kufikiria?",
+            "Je, unaamini kuwa siri ya utajiri wa kizazi hiki imefichwa ndani ya kioo cha simu yako unayoishika sasa?",
+            "Je, uko tayari kuachana na mfumo wa kizamani wa kutafuta kazi na kuanza kumiliki fursa zako mwenyewe?",
+            "Je, unakubali kuwa kila sekunde unayopoteza mtandaoni bila kuzalisha thamani ni fursa iliyopotea kwako?",
+            "Je, uko tayari kuingia kwenye ligi ya watu wachache wanaojua jinsi ya kugeuza 'Likes' kuwa kipato cha uhakika?",
+            "Je, unaamini kuwa jina lako linaweza kuwa chapa kubwa (Brand) inayozungumzwa na maelfu ya watu hapa EMR?",
+            "Je, uko tayari kuwekeza nidhamu na muda wako mfupi kwa ajili ya kupata matokeo yatakayodumu kwa muda mrefu?",
+            "Je, unajua kuwa EMR MONEY imejengwa kwa ajili ya watu wenye njaa ya mafanikio makubwa kama ulivyo wewe?",
+            "Swali la mwisho kabisa: Je, uko tayari kuamua hatima yako ya kibiashara sasa hivi na kuanza kazi?"
+        ];
 
         async function init() {
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
             
-            // Angalia kama tayari ana Role (Kama anayo, mpeleke Dashboard moja kwa moja)
+            // Kama ana role tayari, mpeleke dashboard
             if(user.user_metadata.role) {
                 redirectUser(user.user_metadata.role);
+                return;
             }
 
-            document.getElementById('user-name').innerText = user.user_metadata.full_name;
-
-            // Tengeneza HTML ya maswali
-            let html = '';
-            maswali.forEach((q, i) => {
-                html += `
-                <div class="step" id="step${i+1}">
-                    <p class="question">"${q}"</p>
-                    <button class="btn" onclick="nextStep(${i+2})">Ndiyo, Niko Tayari</button>
-                    <div class="progress">Swali ${i+1} kati ya 10</div>
-                </div>`;
-            });
-            document.getElementById('questions-container').innerHTML = html;
+            userName = user.user_metadata.full_name;
+            document.getElementById('p-bar').style.display = "block";
+            showQuestion();
         }
 
-        function nextStep(s) {
-            document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
-            if(s > 10) {
-                document.getElementById('final-step').classList.add('active');
+        function showQuestion() {
+            if (currentIdx < maswali.length) {
+                const progress = ((currentIdx + 1) / maswali.length) * 100;
+                document.getElementById('p-fill').style.width = progress + "%";
+
+                document.getElementById('content-area').innerHTML = `
+                    <div class="step active">
+                        <span class="user-name">${userName}</span>
+                        <p class="question-text">${maswali[currentIdx]}</p>
+                    </div>
+                `;
+
+                currentIdx++;
+                setTimeout(showQuestion, 3500); // Inabadilika kila baada ya sekunde 3.5
             } else {
-                document.getElementById('step' + s).classList.add('active');
+                showRoleSelection();
             }
+        }
+
+        function showRoleSelection() {
+            document.getElementById('p-bar').style.display = "none";
+            document.getElementById('content-area').innerHTML = `
+                <div class="step active">
+                    <span class="user-name">${userName}</span>
+                    <h2 style="margin-bottom:10px;">Hatua ya Maamuzi</h2>
+                    <p style="font-size:0.9rem; margin-bottom:20px; opacity:0.8;">Chagua njia moja itakayofungua milango yako ya mafanikio hapa EMR.</p>
+                    <div class="role-container">
+                        <div class="role-card" onclick="setRole('merchant')">
+                            <h3>MFANYABIASHARA</h3>
+                            <p>Nataka kukuza biashara yangu, kupata followers, likes, na wateja wengi mtandaoni.</p>
+                        </div>
+                        <div class="role-card" onclick="setRole('client')">
+                            <h3>MFANYAKAZI (Mteja)</h3>
+                            <p>Nataka kufanya kazi, kutoa huduma za kitalaamu, na kutengeneza faida kupitia EMR.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         async function setRole(r) {
+            const status = document.getElementById('content-area');
+            status.innerHTML = `<p>Tunaandaa Dashboard yako ya ${r === 'merchant' ? 'Ufanyabiashara' : 'Ufanyakazi'}...</p>`;
+            
             const { error } = await _supabase.auth.updateUser({
                 data: { role: r }
             });
