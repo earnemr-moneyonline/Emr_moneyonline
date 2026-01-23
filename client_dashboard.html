@@ -3,121 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMR MONEY | Work Feed</title>
+    <title>EMR MARKET | Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --emr-blue: #0a1931; --emr-gold: #ffc947; --dark-smoke: #121212; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: #000; color: white; overflow: hidden; }
-
-        /* TikTok Style Feed */
-        .feed-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .job-post { 
-            height: 100vh; width: 100%; scroll-snap-align: start; 
-            position: relative; background-size: cover; background-position: center;
+        :root { 
+            --emr-blue: #0a1931; 
+            --emr-gold: #ffc947; 
+            --bg-dark: #050a14;
+            --card-glass: rgba(255, 255, 255, 0.05);
         }
 
-        /* Overlay Gradient */
-        .overlay { 
-            position: absolute; bottom: 0; width: 100%; height: 50%; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
-            display: flex; flex-direction: column; justify-content: flex-end; padding: 20px 80px 100px 20px;
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: white; 
+            overflow: hidden; 
         }
 
-        /* Side Action Bar (TikTok Style) */
-        .side-actions { 
-            position: absolute; right: 15px; bottom: 120px; 
-            display: flex; flex-direction: column; align-items: center; gap: 20px; 
+        /* Top Bar: E-commerce Style */
+        .header {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; background: rgba(5, 10, 20, 0.95);
+            backdrop-filter: blur(10px); z-index: 1000;
+            border-bottom: 0.5px solid rgba(255,201,71,0.2);
         }
-        .merchant-profile { position: relative; margin-bottom: 10px; }
-        .m-pic { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; background: #444; }
-        .follow-plus { 
-            position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
-            background: #ffc947; color: black; border-radius: 50%; width: 22px; height: 22px;
-            display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #000;
-        }
-        .action-item { text-align: center; cursor: pointer; }
-        .action-item i { font-size: 30px; color: white; display: block; }
-        .action-item span { font-size: 11px; margin-top: 5px; display: block; color: var(--emr-gold); }
 
-        /* Job Info */
-        .job-info h3 { font-size: 1.1rem; color: var(--emr-gold); margin-bottom: 5px; }
-        .job-info p { font-size: 0.85rem; line-height: 1.4; opacity: 0.9; }
-
-        /* Bottom Navigation */
-        .bottom-nav { 
-            position: fixed; bottom: 0; width: 100%; height: 70px; 
-            background: #000; display: flex; justify-content: space-around; align-items: center; 
-            border-top: 0.5px solid #222; z-index: 1000;
+        .search-bar {
+            background: var(--card-glass); border-radius: 20px;
+            padding: 8px 15px; display: flex; align-items: center; flex: 1; margin: 0 15px;
         }
-        .nav-link { text-align: center; color: #888; text-decoration: none; font-size: 10px; }
-        .nav-link.active { color: white; }
-        .nav-link i { font-size: 22px; display: block; margin-bottom: 4px; }
+        .search-bar input { background: none; border: none; color: white; margin-left: 10px; width: 100%; outline: none; }
 
-        /* Top Bar */
-        .top-bar { 
-            position: fixed; top: 0; width: 100%; height: 60px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 20px; z-index: 1000; background: linear-gradient(rgba(0,0,0,0.6), transparent);
+        /* TikTok-Ecommerce Hybrid Feed */
+        .feed {
+            height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory;
+            padding-top: 70px; padding-bottom: 80px;
         }
+
+        .job-item {
+            height: calc(100vh - 150px); width: 100%; 
+            scroll-snap-align: center; position: relative;
+            padding: 15px; display: flex; align-items: center;
+        }
+
+        .product-card {
+            background: var(--card-glass);
+            width: 100%; height: 100%; border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        /* Image Section */
+        .product-img {
+            height: 60%; width: 100%; background-size: cover; background-position: center;
+            position: relative;
+        }
+
+        .price-tag {
+            position: absolute; top: 20px; right: 20px;
+            background: var(--emr-gold); color: #000;
+            padding: 5px 15px; border-radius: 15px; font-weight: 800;
+            font-size: 1.1rem; box-shadow: 0 5px 15px rgba(255,201,113,0.4);
+        }
+
+        /* Product Details */
+        .product-details {
+            padding: 20px; flex: 1; display: flex; flex-direction: column;
+            justify-content: space-between; background: linear-gradient(to bottom, transparent, #0a1931);
+        }
+
+        .merchant-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .merchant-row img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--emr-gold); }
+        
+        .buy-actions { display: flex; gap: 10px; margin-top: 15px; }
+        
+        .btn-apply {
+            flex: 2; background: var(--emr-gold); color: #000;
+            border: none; border-radius: 15px; font-weight: 700;
+            font-size: 1rem; cursor: pointer; transition: 0.3s;
+        }
+
+        .btn-cart {
+            flex: 1; background: rgba(255,255,255,0.1); color: white;
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Bottom Menu */
+        .footer {
+            position: fixed; bottom: 0; width: 100%; height: 75px;
+            background: rgba(5, 10, 20, 0.98); display: flex;
+            justify-content: space-around; align-items: center;
+            border-top: 0.5px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-link { text-align: center; color: #555; text-decoration: none; font-size: 0.7rem; }
+        .nav-link.active { color: var(--emr-gold); }
+        .nav-link i { font-size: 1.5rem; display: block; margin-bottom: 3px; }
+
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <a href="settings.html" style="color:white;"><i class="fas fa-cog fa-lg"></i></a>
-        <div style="font-weight: 600; font-size: 0.9rem;">
-            <span style="border-bottom: 2px solid gold; padding-bottom: 5px;">For You</span>
-            <span style="margin-left: 15px; opacity: 0.6;">Following</span>
+    <header class="header">
+        <a href="settings.html" style="color:var(--emr-gold)"><i class="fas fa-th-large fa-lg"></i></a>
+        <div class="search-bar">
+            <i class="fas fa-search" style="opacity:0.5"></i>
+            <input type="text" placeholder="Tafuta kazi au bidhaa...">
         </div>
-        <i class="fas fa-search fa-lg"></i>
+        <div style="position:relative">
+            <i class="fas fa-shopping-bag fa-lg"></i>
+            <span style="position:absolute; top:-8px; right:-8px; background:red; font-size:10px; padding:2px 5px; border-radius:50%">3</span>
+        </div>
+    </header>
+
+    <div class="feed">
+        <div class="job-item">
+            <div class="product-card">
+                <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80');">
+                    <div class="price-tag">TZS 2,500</div>
+                </div>
+                <div class="product-details">
+                    <div>
+                        <div class="merchant-row">
+                            <img src="https://i.pravatar.cc/100?u=1" alt="Seller">
+                            <span>@King_Marketing <i class="fas fa-check-circle" style="color:#1da1f2; font-size:12px"></i></span>
+                        </div>
+                        <h4 style="margin-bottom:5px">Instagram Power Boost</h4>
+                        <p style="font-size:0.75rem; opacity:0.7">Fanya 'Like' na 'Comment' kwenye picha 5 za mteja huyu upate malipo yako papo hapo.</p>
+                    </div>
+                    <div class="buy-actions">
+                        <button class="btn-apply" onclick="startTask()">ANZA KAZI</button>
+                        <button class="btn-cart"><i class="far fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="job-item">
+            <div class="product-card">
+                <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1611606063065-ee7946f0787a?auto=format&fit=crop&w=800&q=80');">
+                    <div class="price-tag">TZS 1,000</div>
+                </div>
+                <div class="product-details">
+                    <div>
+                        <div class="merchant-row">
+                            <img src="https://i.pravatar.cc/100?u=2" alt="Seller">
+                            <span>@Tiktok_Growth_TZ</span>
+                        </div>
+                        <h4 style="margin-bottom:5px">Follow & Share Task</h4>
+                        <p style="font-size:0.75rem; opacity:0.7">Kazi rahisi ya kufuata akaunti na kusambaza video moja ya bidhaa za urembo.</p>
+                    </div>
+                    <div class="buy-actions">
+                        <button class="btn-apply" onclick="startTask()">ANZA KAZI</button>
+                        <button class="btn-cart"><i class="far fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="feed-container">
-        <div class="job-post" style="background-image: url('https://source.unsplash.com/random/900x1600/?office,work');">
-            <div class="overlay">
-                <div class="job-info">
-                    <h3>@Digital_Empire_TZ</h3>
-                    <p>Nahitaji watu 100 wakafollow akaunti ya biashara TikTok. Lipwa TZS 300 kwa kila follow.</p>
-                </div>
-            </div>
-            <div class="side-actions">
-                <div class="merchant-profile">
-                    <img src="https://i.pravatar.cc/150?u=1" class="m-pic">
-                    <div class="follow-plus"><i class="fas fa-plus"></i></div>
-                </div>
-                <div class="action-item"><i class="fas fa-play-circle"></i><span>Anza Kazi</span></div>
-                <div class="action-item"><i class="fas fa-upload"></i><span>Submit</span></div>
-                <div class="action-item"><i class="fas fa-info-circle"></i><span>Details</span></div>
-            </div>
-        </div>
-
-        <div class="job-post" style="background-image: url('https://source.unsplash.com/random/900x1600/?tech,mobile');">
-            <div class="overlay">
-                <div class="job-info">
-                    <h3>@Smart_Gadgets</h3>
-                    <p>Toa maoni (Comment) chanya kwenye Google Maps kuhusu duka letu. Lipwa TZS 1,500.</p>
-                </div>
-            </div>
-            <div class="side-actions">
-                <div class="merchant-profile">
-                    <img src="https://i.pravatar.cc/150?u=2" class="m-pic">
-                    <div class="follow-plus"><i class="fas fa-plus"></i></div>
-                </div>
-                <div class="action-item"><i class="fas fa-play-circle"></i><span>Anza Kazi</span></div>
-                <div class="action-item"><i class="fas fa-upload"></i><span>Submit</span></div>
-                <div class="action-item"><i class="fas fa-info-circle"></i><span>Details</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
+    <footer class="footer">
         <a href="#" class="nav-link active"><i class="fas fa-home"></i>Home</a>
-        <a href="notif.html" class="nav-link"><i class="fas fa-bell"></i>Notif</a>
-        <a href="stats.html" class="nav-link"><i class="fas fa-chart-bar"></i>Stats</a>
-        <a href="profile.html" class="nav-link"><i class="fas fa-user-circle"></i>Profile</a>
-    </div>
+        <a href="notif.html" class="nav-link"><i class="fas fa-bolt"></i>Kazi</a>
+        <a href="stats.html" class="nav-link"><i class="fas fa-wallet"></i>Wallet</a>
+        <a href="profile.html" class="nav-link"><i class="fas fa-user"></i>Profile</a>
+    </footer>
 
+    <script>
+        function startTask() {
+            alert("Kazi imeanza! Fuata maelekezo kisha upige picha ya uthibitisho (Screenshot).");
+        }
+    </script>
 </body>
 </html>
