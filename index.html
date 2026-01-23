@@ -3,33 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMR Online | Senior Architect System</title>
+    <title>EMR Money Online | Jisajili</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         :root {
-            --primary-color: #00d2ff;
-            --secondary-color: #3a7bd5;
-            --dark-bg: #0f1418;
-            --glass: rgba(255, 255, 255, 0.05);
+            --main-blue: #0a1931; /* Bluu nzito ya kitalaamu */
+            --accent-gold: #ffc947; /* Rangi ya dhahabu kwa ajili ya kuvutia */
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.95);
         }
 
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            padding: 0;
+            background: linear-gradient(135deg, var(--main-blue) 0%, #162a4d 100%);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #000 100%);
-            color: white;
+            color: #333;
         }
 
-        /* Center the Form */
-        .main-container {
+        /* Logo Area */
+        header {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--white);
+            text-decoration: none;
+        }
+        .logo-icon {
+            background: var(--accent-gold);
+            color: var(--main-blue);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(255, 201, 71, 0.3);
+        }
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Signup Container */
+        .main-content {
             flex: 1;
             display: flex;
             justify-content: center;
@@ -39,184 +70,218 @@
 
         .signup-card {
             background: var(--glass);
-            backdrop-filter: blur(15px);
-            padding: 40px;
-            border-radius: 20px;
             width: 100%;
-            max-width: 380px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        h2 {
-            color: var(--primary-color);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 30px;
+        .signup-card h2 {
+            margin: 0 0 10px;
+            color: var(--main-blue);
+            font-size: 1.6rem;
+        }
+        .signup-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
         }
 
-        .input-group {
-            margin-bottom: 20px;
+        /* Form Inputs */
+        .form-group {
+            position: relative;
+            margin-bottom: 18px;
             text-align: left;
         }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            opacity: 0.8;
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.1rem;
         }
-
         input {
             width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            border: none;
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-            outline: none;
+            padding: 15px 15px 15px 45px;
+            border: 1.5px solid #eee;
+            border-radius: 15px;
             box-sizing: border-box;
+            font-size: 1rem;
+            background: #f8fafc;
             transition: 0.3s;
         }
-
         input:focus {
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 15px var(--primary-color);
+            border-color: var(--accent-gold);
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(255, 201, 71, 0.2);
         }
 
-        .btn-submit {
+        /* Button Styling */
+        .btn-signup {
             width: 100%;
             padding: 16px;
+            background: var(--main-blue);
             border: none;
-            border-radius: 10px;
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
+            border-radius: 15px;
+            color: var(--white);
+            font-weight: 600;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: 0.3s;
             margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(10, 25, 49, 0.2);
+        }
+        .btn-signup:hover {
+            background: #1a3a6e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 25, 49, 0.3);
         }
 
-        .btn-submit:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
-        }
-
-        #status-msg {
+        /* Status Area */
+        #msg-status {
             margin-top: 20px;
             font-size: 0.9rem;
-            min-height: 1.2em;
+            font-weight: 500;
         }
 
-        /* Footer with Real Social Icons */
+        .footer-links {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .footer-links a {
+            color: var(--main-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Modern Footer */
         footer {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0,0,0,0.3);
             padding: 30px;
             text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--white);
         }
-
         .social-icons {
             margin-bottom: 15px;
         }
-
         .social-icons a {
-            color: white;
-            font-size: 1.8rem;
+            color: var(--white);
+            font-size: 1.5rem;
             margin: 0 15px;
-            text-decoration: none;
             transition: 0.3s;
-        }
-
-        .social-icons a:hover {
-            color: var(--primary-color);
-            transform: scale(1.2);
             display: inline-block;
         }
-
-        .footer-text {
-            font-size: 0.75rem;
-            opacity: 0.5;
+        .social-icons a:hover {
+            color: var(--accent-gold);
+            transform: translateY(-5px);
+        }
+        .copyright {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon"><i class="fas fa-coins"></i></div>
+            <div class="logo-text">EMR MONEY</div>
+        </div>
+    </header>
+
+    <div class="main-content">
         <div class="signup-card">
-            <h2>Sign Up</h2>
+            <h2>Fungua Akaunti</h2>
+            <p>Anza safari yako ya mafanikio leo.</p>
             
-            <div class="input-group">
-                <label>Barua Pepe (Email)</label>
-                <input type="email" id="email" placeholder="mfano@emr.com" required>
+            <div class="form-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="full_name" placeholder="Jina Kamili" required>
             </div>
 
-            <div class="input-group">
-                <label>Neno la Siri (Password)</label>
-                <input type="password" id="password" placeholder="Min 6 characters" required>
+            <div class="form-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" placeholder="Barua Pepe (Email)" required>
             </div>
 
-            <button class="btn-submit" onclick="handleSignUp()">Unda Akaunti</button>
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="Neno la Siri (Min 6 chars)" required>
+            </div>
+
+            <button class="btn-signup" onclick="signUpUser()">TENGENEZA AKAUNTI</button>
             
-            <div id="status-msg"></div>
+            <div id="msg-status"></div>
+
+            <div class="footer-links">
+                Tayari unayo akaunti? <a href="login.html">Ingia Hapa</a>
+            </div>
         </div>
     </div>
 
     <footer>
         <div class="social-icons">
-            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+            <a href="#"><i class="fab fa-telegram"></i></a>
             <a href="#"><i class="fab fa-instagram"></i></a>
             <a href="#"><i class="fab fa-tiktok"></i></a>
-            <a href="#"><i class="fab fa-whatsapp"></i></a>
-            <a href="#"><i class="fab fa-x-twitter"></i></a>
         </div>
-        <p class="footer-text">© 2026 EMR Online System | Developed by Senior Architect</p>
+        <p class="copyright">© 2026 EMR MONEY ONLINE. DESIGNED BY SENIOR ARCHITECT.</p>
     </footer>
 
     <script>
-        // Supabase Credentials kutoka kwenye Notes zako
+        // Supabase Credentials - Tayari nimeziweka kwa ajili yako
         const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
-
-        // Initialize Supabase Client
+        
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function handleSignUp() {
+        async function signUpUser() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const statusMsg = document.getElementById('status-msg');
+            const fullName = document.getElementById('full_name').value;
+            const statusBox = document.getElementById('msg-status');
 
-            // Validations
-            if (!email || !password) {
-                statusMsg.innerText = "Tafadhali jaza nafasi zote!";
-                statusMsg.style.color = "#ff9f43";
+            if(!email || !password || !fullName) {
+                statusBox.innerText = "Tafadhali jaza nafasi zote!";
+                statusBox.style.color = "#e74c3c";
                 return;
             }
 
-            statusMsg.innerText = "Inasindika... Tafadhali subiri.";
-            statusMsg.style.color = "#ffffff";
+            statusBox.innerText = "Inatengeneza akaunti yako...";
+            statusBox.style.color = "#3498db";
 
-            // Supabase Auth Call
             const { data, error } = await _supabase.auth.signUp({
                 email: email,
                 password: password,
+                options: {
+                    data: {
+                        display_name: fullName
+                    }
+                }
             });
 
             if (error) {
-                statusMsg.innerText = "Error: " + error.message;
-                statusMsg.style.color = "#ff6b6b";
+                statusBox.innerText = "Tatizo: " + error.message;
+                statusBox.style.color = "#e74c3c";
             } else {
-                statusMsg.innerText = "Hongera! Check email yako sasa hivi kuthibitisha akaunti yako.";
-                statusMsg.style.color = "#1dd1a1";
+                statusBox.innerText = "Hongera! Tafadhali fungua email yako ili kuthibitisha akaunti yako.";
+                statusBox.style.color = "#27ae60";
                 
-                // Clear inputs
+                // Clear fields
                 document.getElementById('email').value = "";
                 document.getElementById('password').value = "";
+                document.getElementById('full_name').value = "";
             }
         }
     </script>
 </body>
 </html>
-
