@@ -3,187 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet & Profile | EMR Pro</title>
+    <title>Merchant Wallet | EMR Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        
-        body { 
-            background: var(--bg); 
-            background-image: url('default_bg.jpg'); /* Hii itabadilika user akiweka yake */
-            background-size: cover; background-attachment: fixed;
-            color: white; padding-bottom: 50px;
-        }
+        :root { --bg: #000000; --accent: #ff0050; --gold: #ffc947; --card: #121212; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; }
+        body { background: var(--bg); color: white; padding-bottom: 80px; }
 
-        /* Profile Header */
-        .profile-header { padding: 40px 20px 20px; text-align: center; background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(10px); }
-        .avatar-wrapper { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; }
-        .avatar-img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; }
-        .edit-avatar { position: absolute; bottom: 0; right: 0; background: var(--gold); color: #000; padding: 5px; border-radius: 50%; font-size: 0.8rem; cursor: pointer; }
+        /* Profile Header (TikTok Style) */
+        .header { padding: 40px 20px 20px; text-align: center; }
+        .pfp-area { position: relative; width: 100px; height: 100px; margin: 0 auto; }
+        .pfp-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
+        .edit-pfp { position: absolute; bottom: 0; right: 0; background: var(--accent); color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #000; }
         
-        .wisdom-text { font-style: italic; font-size: 0.8rem; color: var(--gold); margin-bottom: 5px; opacity: 0.9; }
-        .nickname { font-size: 1.4rem; font-weight: 800; }
-        .bio-text { font-size: 0.75rem; opacity: 0.7; max-width: 250px; margin: 10px auto; }
+        .username { margin-top: 15px; font-weight: 700; font-size: 1.2rem; }
+        .bio { font-size: 0.85rem; opacity: 0.6; margin: 5px 0 15px; }
+
+        /* Stats Row */
+        .stats-row { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; }
+        .stat-box { text-align: center; }
+        .stat-num { font-weight: 800; font-size: 1.1rem; display: block; }
+        .stat-label { font-size: 0.75rem; opacity: 0.5; }
 
         /* Wallet Section */
-        .wallet-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); margin: -20px 20px 20px; border-radius: 25px; padding: 25px; border: 1px solid rgba(255,201,71,0.2); }
-        .balance-label { font-size: 0.7rem; text-transform: uppercase; color: var(--gold); letter-spacing: 1px; }
-        .balance-amt { font-size: 2rem; font-weight: 900; margin: 5px 0; }
+        .wallet-banner { background: var(--card); margin: 0 15px; border-radius: 15px; padding: 20px; border: 1px solid #333; }
+        .bal-title { font-size: 0.7rem; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .bal-val { font-size: 2.2rem; font-weight: 900; margin: 5px 0; }
 
-        /* Action Buttons Grid */
-        .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px; margin-bottom: 30px; }
-        .act-btn { background: var(--card); padding: 15px; border-radius: 20px; text-align: center; border: 1px solid #334155; text-decoration: none; color: white; transition: 0.3s; }
-        .act-btn i { font-size: 1.2rem; color: var(--gold); margin-bottom: 8px; display: block; }
-        .act-btn span { font-size: 0.75rem; font-weight: 600; }
+        /* Real-Time Graph */
+        .graph-section { padding: 20px; margin-top: 20px; }
+        .graph-card { background: var(--card); border-radius: 20px; padding: 15px; border: 1px solid #222; }
 
-        /* Statistics Chart */
-        .stats-section { padding: 20px; background: rgba(30, 41, 59, 0.5); border-radius: 30px; margin: 0 20px 20px; }
-        .chart-title { font-size: 0.8rem; color: var(--gold); margin-bottom: 15px; font-weight: 700; text-transform: uppercase; }
-        
-        /* Followers Section */
-        .followers-list { padding: 0 20px; }
-        .follower-item { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 15px; margin-bottom: 10px; }
-        .follower-item img { width: 45px; height: 45px; border-radius: 12px; margin-right: 15px; }
-        .wa-btn { margin-left: auto; color: #25D366; font-size: 1.4rem; }
-
-        /* Settings Drawer (Popup) */
-        #settings-drawer { 
-            position: fixed; right: -100%; bottom: 0; width: 50%; height: 50%; 
-            background: var(--card); border-top-left-radius: 30px; transition: 0.4s; 
-            z-index: 1000; padding: 25px; box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-        }
-        #settings-drawer.active { right: 0; }
-
-        .setting-header { border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; font-size: 0.9rem; font-weight: 800; }
-        .theme-btn { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 10px; font-size: 0.75rem; }
-
+        /* Followers List */
+        .follower-card { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid #111; }
+        .f-img { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; background: #222; }
+        .f-name { font-size: 0.9rem; font-weight: 600; flex: 1; }
+        .wa-link { color: #25D366; font-size: 1.2rem; text-decoration: none; }
     </style>
 </head>
 <body>
 
-    <i class="fas fa-cog" style="position: absolute; top: 20px; right: 20px; font-size: 1.2rem; z-index: 10;" onclick="toggleSettings()"></i>
-
-    <div class="profile-header">
-        <div class="avatar-wrapper">
-            <img src="https://via.placeholder.com/100" class="avatar-img" id="user-avatar">
-            <label for="avatar-input" class="edit-avatar"><i class="fas fa-camera"></i></label>
-            <input type="file" id="avatar-input" hidden onchange="uploadAvatar()">
+    <div class="header">
+        <div class="pfp-area">
+            <img id="my-avatar" src="https://via.placeholder.com/100" class="pfp-img">
+            <label for="pfp-upload" class="edit-pfp"><i class="fas fa-plus"></i></label>
+            <input type="file" id="pfp-upload" hidden onchange="uploadPFP(this)">
         </div>
-        <p class="wisdom-text">"Kufanikiwa ni hatua, kuanza ni ujasiri."</p>
-        <h2 class="nickname" id="user-nick" contenteditable="true" onblur="updateProfile()">Bosi Mkuu</h2>
-        <p class="bio-text" id="user-bio" contenteditable="true" onblur="updateProfile()">Mjasiriamali na Mpenda Maendeleo.</p>
-    </div>
-
-    <div class="wallet-card">
-        <p class="balance-label">Salio la Kampeni</p>
-        <p class="balance-amt" id="balance-txt">TZS 0</p>
-        <button class="act-btn" style="width: 100%; background: var(--gold); color: #000; margin-top: 10px;">
-            <i class="fas fa-plus-circle" style="color: #000; margin-bottom: 0;"></i> WEKA PESA
-        </button>
-    </div>
-
-    <div class="action-grid">
-        <a href="merchant_jobs_list.html" class="act-btn">
-            <i class="fas fa-chart-line"></i>
-            <span>Kagua Kazi</span>
-        </a>
-        <div class="act-btn" onclick="shareLink()">
-            <i class="fas fa-share-alt"></i>
-            <span>Alika Mabosi</span>
-        </div>
-        <div class="act-btn">
-            <i class="fas fa-shield-alt"></i>
-            <span>Usalama</span>
-        </div>
-        <div class="act-btn" onclick="toggleSettings()">
-            <i class="fas fa-palette"></i>
-            <span>Themes</span>
-        </div>
-    </div>
-
-    <div class="stats-section">
-        <p class="chart-title">Mwenendo wa Kazi (Weekly)</p>
-        <canvas id="statsChart" height="200"></canvas>
-    </div>
-
-    <div class="followers-list">
-        <p class="chart-title" style="margin-left: 20px;">Wafanyakazi Walio-follow</p>
-        <div id="followers-container">
+        <div class="username" id="my-name" contenteditable="true" onblur="updateDB()">@loading...</div>
+        <div class="bio" id="my-bio" contenteditable="true" onblur="updateDB()">Gusa hapa kuandika bio yako...</div>
+        
+        <div class="stats-row">
+            <div class="stat-box">
+                <span class="stat-num" id="count-followers">0</span>
+                <span class="stat-label">Followers</span>
             </div>
+            <div class="stat-box">
+                <span class="stat-num" id="count-jobs">0</span>
+                <span class="stat-label">Kazi Zilizopitishwa</span>
+            </div>
+        </div>
+
+        <div class="wallet-banner">
+            <p class="bal-title">Salio la Biashara</p>
+            <p class="bal-val" id="my-balance">TZS 0</p>
+            <button onclick="location.href='deposit.html'" style="width:100%; padding:12px; background:#fff; color:#000; border-radius:8px; font-weight:bold; border:none; margin-top:10px;">WEKA PESA</button>
+        </div>
     </div>
 
-    <div id="settings-drawer">
-        <div class="setting-header">Usimamizi</div>
-        <button class="theme-btn" onclick="changeTheme('dark')">Theme: Dark Mode</button>
-        <button class="theme-btn" onclick="changeTheme('glass')">Theme: Glassmorphism</button>
-        <button class="theme-btn" onclick="document.getElementById('bg-input').click()">Weka Picha yako ya Background</button>
-        <input type="file" id="bg-input" hidden onchange="changeBackground()">
-        <button class="theme-btn" style="border-color: #ef4444; color: #ef4444;" onclick="logout()">Logout</button>
+    <div class="graph-section">
+        <p style="font-size: 0.8rem; font-weight: 700; margin-bottom: 10px;">MWENENDO WA KAZI (REAL DATA)</p>
+        <div class="graph-card">
+            <canvas id="realChart"></canvas>
+        </div>
     </div>
+
+    <div id="followers-list">
+        <p style="padding: 20px 20px 10px; font-size: 0.8rem; font-weight: 700; opacity: 0.5;">WAFANYAKAZI WAKO (FOLLOWERS)</p>
+        </div>
 
     <script>
-        // Supabase Initialization hapa...
-        
-        function toggleSettings() {
-            document.getElementById('settings-drawer').classList.toggle('active');
-        }
+        // Supabase configuration
+        const _supabase = supabase.createClient('URL', 'KEY');
 
-        async function loadProfile() {
+        async function init() {
             const { data: { user } } = await _supabase.auth.getUser();
-            const { data } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
-            if(data) {
-                document.getElementById('user-nick').innerText = data.full_name || "Maboresho...";
-                document.getElementById('user-bio').innerText = data.bio || "Gusa hapa kuweka maelezo...";
-                document.getElementById('balance-txt').innerText = "TZS " + data.balance.toLocaleString();
-                if(data.avatar_url) document.getElementById('user-avatar').src = data.avatar_url;
-                if(data.dashboard_bg) document.body.style.backgroundImage = `url(${data.dashboard_bg})`;
+            
+            // 1. Vuta Profile
+            const { data: profile } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
+            if(profile) {
+                document.getElementById('my-name').innerText = profile.full_name;
+                document.getElementById('my-bio').innerText = profile.bio || "Mjasiriamali";
+                document.getElementById('my-balance').innerText = "TZS " + profile.balance.toLocaleString();
+                if(profile.avatar_url) document.getElementById('my-avatar').src = profile.avatar_url;
             }
-            initChart();
+
+            // 2. Vuta Followers wa kweli (Watu waliokufuata - Utahitaji table ya follows)
+            const { count: followCount } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('merchant_id', user.id);
+            document.getElementById('count-followers').innerText = followCount || 0;
+
+            // 3. Vuta idadi ya Kazi zilizokamilika (Approved Submissions)
+            const { count: jobCount } = await _supabase.from('submissions')
+                .select('*, jobs!inner(merchant_id)', { count: 'exact' })
+                .eq('jobs.merchant_id', user.id)
+                .eq('status', 'approved');
+            document.getElementById('count-jobs').innerText = jobCount || 0;
+
+            loadGraph(user.id);
+            loadFollowers(user.id);
         }
 
-        function initChart() {
-            const ctx = document.getElementById('statsChart').getContext('2d');
+        async function loadGraph(mId) {
+            // Hapa tunavuta data za submissions za siku 7 zilizopita kwa merchant huyu
+            const { data } = await _supabase.rpc('get_merchant_stats', { m_id: mId });
+            
+            const ctx = document.getElementById('realChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: data.map(d => d.date), // Itatoka SQL
                     datasets: [{
-                        label: 'Kazi Zilizokamilika',
-                        data: [12, 19, 3, 5, 2, 3, 10], // Hapa tutatoa data halisi toka Supabase
-                        borderColor: '#ffc947',
-                        tension: 0.4,
+                        label: 'Kazi',
+                        data: data.map(d => d.count),
+                        borderColor: '#ff0050',
+                        backgroundColor: 'rgba(255, 0, 80, 0.1)',
                         fill: true,
-                        backgroundColor: 'rgba(255, 201, 71, 0.1)'
+                        tension: 0.4
                     }]
                 },
                 options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
             });
         }
 
-        function shareLink() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'EMR Pro',
-                    text: 'Jiunge kama Mfanyabiashara urushe kazi zako!',
-                    url: 'https://emrpro.co/invite/merchant/' + user_id
-                });
-            } else {
-                alert("Link ya mwaliko: https://emrpro.co/invite/merchant/");
-            }
-        }
-
-        // Kazi ya ku-update nickname na bio papo hapo
-        async function updateProfile() {
-            const name = document.getElementById('user-nick').innerText;
-            const bio = document.getElementById('user-bio').innerText;
+        async function updateDB() {
             const { data: { user } } = await _supabase.auth.getUser();
-            await _supabase.from('profiles').update({ full_name: name, bio: bio }).eq('id', user.id);
+            await _supabase.from('profiles').update({
+                full_name: document.getElementById('my-name').innerText,
+                bio: document.getElementById('my-bio').innerText
+            }).eq('id', user.id);
         }
 
-        loadProfile();
+        init();
     </script>
 </body>
 </html>
