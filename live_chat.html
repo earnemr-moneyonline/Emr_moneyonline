@@ -33,27 +33,30 @@
         }
 
         /* Message Bubble & Swipe Logic */
-        .msg-container { position: relative; width: 100%; display: flex; flex-direction: column; transition: transform 0.2s ease-out; cursor: pointer; touch-action: pan-y; }
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 0.92rem; position: relative; }
+        .msg-container { position: relative; width: 100%; display: flex; flex-direction: column; transition: transform 0.2s ease-out; touch-action: pan-y; }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 0.92rem; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
         .sent { align-self: flex-end; background: var(--me); border-top-right-radius: 0; }
         .received { align-self: flex-start; background: var(--others); border-top-left-radius: 0; }
         
         .sender-row { font-size: 0.75rem; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
         .badge { font-size: 0.55rem; padding: 1px 4px; border-radius: 3px; color: #000; font-weight: 900; margin-left: 5px; }
-        .del-btn { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; opacity: 0.6; padding: 5px; }
+        .del-btn { color: #ff4d4d; font-size: 0.85rem; cursor: pointer; padding: 2px 5px; }
 
         /* Reply UI in Message */
-        .reply-in-msg { background: rgba(0,0,0,0.25); border-left: 3px solid var(--gold); padding: 5px; border-radius: 4px; margin-bottom: 5px; font-size: 0.8rem; opacity: 0.9; }
+        .reply-in-msg { background: rgba(0,0,0,0.3); border-left: 3px solid var(--green); padding: 5px 8px; border-radius: 4px; margin-bottom: 5px; font-size: 0.8rem; color: #b1b1b1; }
 
         .msg-footer { font-size: 0.62rem; display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 4px; opacity: 0.7; }
         .tick-blue { color: #53bdeb; }
 
         /* Input & Reply Preview Area */
         .bottom-area { background: var(--bg); z-index: 1000; }
-        #reply-preview { background: #1e2a30; padding: 8px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; animation: slideUp 0.2s; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        #reply-preview { 
+            background: #1e2a30; padding: 10px 15px; border-left: 5px solid var(--green); 
+            display: none; justify-content: space-between; align-items: center;
+        }
+        #reply-text-box { font-size: 0.82rem; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        #typing-indicator { height: 20px; padding-left: 20px; font-size: 0.75rem; color: var(--green); font-style: italic; visibility: hidden; }
+        #typing-indicator { height: 22px; padding-left: 20px; font-size: 0.78rem; color: var(--green); font-style: italic; visibility: hidden; }
         
         .input-bar { background: var(--header); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
         #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; font-size: 1rem; }
@@ -74,8 +77,8 @@
 
 <div class="bottom-area">
     <div id="reply-preview">
-        <div id="reply-text" style="font-size: 0.82rem; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
-        <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; color: white;"></i>
+        <div id="reply-text-box"></div>
+        <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; color: white; padding: 5px;"></i>
     </div>
     <div id="typing-indicator">anaandika...</div>
     <div class="input-bar">
@@ -85,6 +88,7 @@
 </div>
 
 <script>
+    // DATA ZAKO ZA SUPABASE ZINABAKI HAPA
     const _client = supabase.createClient('https://bnskxnaqjmsrtzglsdug.supabase.co', 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K');
     let me = null;
     let typingTimeout;
@@ -100,12 +104,15 @@
             me.display_name = (profile.full_name || profile.username || "User").split(' ')[0];
         }
 
+        // Hesabu ya Members wote
         const { count } = await _client.from('profiles').select('*', { count: 'exact', head: true });
         document.getElementById('total-members').innerText = count + " Members";
 
+        // Pakia meseji 50 za mwisho
         const { data: msgs } = await _client.from('messages').select('*').order('id', { ascending: true }).limit(50);
         if(msgs) msgs.forEach(m => render(m));
 
+        // Real-time Engine (Presence & Changes)
         const channel = _client.channel('emr-main', { config: { presence: { key: user.id } } });
         channel
         .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, p => {
@@ -140,19 +147,18 @@
         container.className = 'msg-container';
         container.id = `msg-${m.id}`;
 
-        // Swipe to Reply Logic
+        // SWIPE TO REPLY LOGIC (Kama TikTok/WhatsApp)
         let startX = 0;
-        container.ontouchstart = (e) => startX = e.touches[0].clientX;
-        container.ontouchmove = (e) => {
+        container.addEventListener('touchstart', (e) => startX = e.touches[0].clientX);
+        container.addEventListener('touchmove', (e) => {
             let diff = e.touches[0].clientX - startX;
-            if (diff > 0 && diff < 100) container.style.transform = `translateX(${diff}px)`;
-        };
-        container.ontouchend = (e) => {
-            if (parseInt(container.style.transform.replace('translateX(', '')) > 50) setReply(m.sender_name, m.content);
+            if (diff > 0 && diff < 80) container.style.transform = `translateX(${diff}px)`;
+        });
+        container.addEventListener('touchend', (e) => {
+            let finalDiff = e.changedTouches[0].clientX - startX;
+            if (finalDiff > 50) setReply(m.sender_name, m.content);
             container.style.transform = 'translateX(0px)';
-        };
-        // Desktop support (Double click to reply)
-        container.ondblclick = () => setReply(m.sender_name, m.content);
+        });
 
         let label = 'MFANYAKAZI', color = 'var(--green)';
         if(m.is_admin === 1) { label = 'ADMIN'; color = 'var(--admin)'; }
@@ -182,7 +188,7 @@
     function setReply(name, text) {
         selectedReply = { name, text };
         document.getElementById('reply-preview').style.display = 'flex';
-        document.getElementById('reply-text').innerHTML = `<b>@${name}</b>: ${text}`;
+        document.getElementById('reply-text-box').innerHTML = `Kujibu <b>@${name}</b>: ${text}`;
         document.getElementById('msg-input').focus();
     }
 
@@ -207,7 +213,9 @@
     }
 
     async function deleteMsg(id) {
-        if(confirm("Futa ujumbe huu?")) await _client.from('messages').delete().eq('id', id);
+        if(confirm("Admin, unafuta ujumbe huu?")) {
+            await _client.from('messages').delete().eq('id', id);
+        }
     }
 
     document.getElementById('msg-input').onkeyup = (e) => { if(e.key === "Enter") send(); };
