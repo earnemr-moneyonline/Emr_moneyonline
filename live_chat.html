@@ -2,176 +2,168 @@
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMR Fast Chat | Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EMR Ultra Chat</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #0b141a; --header: #202c33; --my-msg: #005c4b; --other-msg: #202c33; --gold: #ffc947; --green: #25d366; --text: #e9edef; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #0b141a; --header: #202c33; --me: #005c4b; --others: #202c33; --gold: #ffc947; --green: #25d366; }
+        body, html { height: 100%; margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e9edef; overflow: hidden; }
         
-        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
+        .chat-container { display: flex; flex-direction: column; height: 100vh; }
+        
         /* Header */
-        .chat-header { background: var(--header); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .user-info h4 { font-size: 1rem; color: #fff; }
-        .online-status { font-size: 0.75rem; color: var(--green); display: flex; align-items: center; gap: 5px; }
-        .online-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; display: inline-block; }
+        .header { background: var(--header); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .online-info h4 { margin: 0; font-size: 0.95rem; }
+        .online-info span { font-size: 0.75rem; color: var(--green); }
 
-        /* Chat Box - Imepewa padding-bottom ili isizibe input */
-        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: #0b141a; background-blend-mode: overlay; scroll-behavior: smooth; z-index: 10; }
-
-        .msg-container { display: flex; flex-direction: column; max-width: 85%; position: relative; padding: 6px 10px; border-radius: 8px; font-size: 0.92rem; cursor: pointer; }
-        .me { align-self: flex-end; background: var(--my-msg); border-bottom-right-radius: 2px; }
-        .others { align-self: flex-start; background: var(--other-msg); border-bottom-left-radius: 2px; }
-
-        .sender-name { font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; display: flex; justify-content: space-between; }
-        .role-badge { font-size: 0.6rem; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; color: #000; font-weight: 800; }
+        /* Chat Window */
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: var(--bg); }
         
-        .reply-quoted { background: rgba(0,0,0,0.15); border-left: 4px solid var(--gold); padding: 5px 8px; border-radius: 4px; margin-bottom: 5px; font-size: 0.82rem; }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 0.92rem; position: relative; cursor: pointer; transition: 0.2s; }
+        .sent { align-self: flex-end; background: var(--me); border-bottom-right-radius: 2px; }
+        .received { align-self: flex-start; background: var(--others); border-bottom-left-radius: 2px; }
+        
+        .reply-card { background: rgba(0,0,0,0.2); border-left: 3px solid var(--gold); padding: 5px 8px; border-radius: 4px; margin-bottom: 5px; font-size: 0.8rem; color: #b1b3b5; }
+        .sender { font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; display: flex; justify-content: space-between; gap: 10px; }
+        .badge { font-size: 0.6rem; padding: 1px 5px; border-radius: 4px; color: #000; text-transform: uppercase; font-weight: 900; }
 
-        .msg-footer { display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 0.65rem; margin-top: 2px; opacity: 0.7; }
-        .tick { color: #53bdeb; }
+        .msg-info { font-size: 0.65rem; float: right; margin-top: 4px; opacity: 0.6; display: flex; align-items: center; gap: 3px; }
+        .tick-blue { color: #53bdeb; }
 
-        /* Reply Preview Bar */
-        #reply-preview-bar { background: #1e2a30; padding: 8px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; border-top: 1px solid #313d45; z-index: 110; }
+        /* Reply Preview UI */
+        #reply-preview { background: #1e2a30; padding: 8px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; }
 
-        /* Input Bar - Imewekewa z-index ya juu zaidi */
-        .input-bar { background: var(--header); padding: 10px 15px; display: flex; align-items: center; gap: 10px; z-index: 120; position: relative; }
-        #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 15px; border-radius: 25px; color: #fff; outline: none; font-size: 0.95rem; }
-        .btn-send { background: #00a884; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        /* Footer Input */
+        .footer { background: var(--header); padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+        #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 16px; border-radius: 24px; color: white; outline: none; font-size: 0.95rem; }
+        .send-btn { background: #00a884; border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-    <div class="chat-header">
-        <div class="user-info">
-            <h4 id="total-members">EMR Members: 0</h4>
-            <div class="online-status">
-                <span class="online-dot"></span>
-                <span id="active-count">1 Active</span>
-            </div>
+<div class="chat-container">
+    <div class="header">
+        <div class="online-info">
+            <h4 id="group-name">EMR Official Chat</h4>
+            <span id="active-count"><i class="fas fa-circle" style="font-size:0.5rem"></i> 1 Active</span>
         </div>
-        <i class="fas fa-ellipsis-v" style="opacity: 0.6;"></i>
+        <div id="total-members" style="font-size: 0.7rem; opacity: 0.6;">Members: 0</div>
     </div>
 
-    <div id="chat-box"></div>
+    <div id="chat-window"></div>
 
-    <div id="reply-preview-bar">
-        <div id="reply-info" style="font-size: 0.85rem;"></div>
+    <div id="reply-preview">
+        <div id="reply-text" style="font-size: 0.8rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"></div>
         <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; padding: 5px;"></i>
     </div>
 
-    <div class="input-bar">
-        <input type="text" id="msg-input" placeholder="Andika ujumbe hapa..." autocomplete="off">
-        <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    <div class="footer">
+        <input type="text" id="msg-input" placeholder="Andika ujumbe..." autocomplete="off">
+        <button class="send-btn" onclick="send()"><i class="fas fa-paper-plane"></i></button>
     </div>
+</div>
 
-    <script>
-        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+    const _client = supabase.createClient('https://bnskxnaqjmsrtzglsdug.supabase.co', 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K');
+    let me = null;
+    let selectedReply = null;
 
-        let myProfile = null;
-        let replyData = null;
+    async function init() {
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        
+        const { data: { user } } = await _client.auth.getUser();
+        if(!user) return;
+        
+        const { data: profile } = await _client.from('profiles').select('*').eq('id', user.id).single();
+        me = profile;
 
-        async function start() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if(!user) return;
+        // Vuta idadi ya members
+        const { count } = await _client.from('profiles').select('*', { count: 'exact', head: true });
+        document.getElementById('total-members').innerText = "Members: " + count;
 
-            const { data: profile } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
-            myProfile = profile;
+        // Meseji za zamani
+        const { data: msgs } = await _client.from('messages').select('*').order('id', { ascending: true }).limit(70);
+        if(msgs) msgs.forEach(m => render(m));
 
-            const { count } = await _supabase.from('profiles').select('*', { count: 'exact', head: true });
-            document.getElementById('total-members').innerText = "EMR Members: " + count;
-
-            loadMessages();
-            initRealtime(user.id);
-        }
-
-        function initRealtime(userId) {
-            const chatChannel = _supabase.channel('global-chat', { config: { presence: { key: userId } } });
-
-            chatChannel
-                .on('presence', { event: 'sync' }, () => {
-                    const onlineCount = Object.keys(chatChannel.presenceState()).length;
-                    document.getElementById('active-count').innerText = `${onlineCount} Active Sasa hivi`;
-                })
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (p) => appendMessage(p.new))
-                .subscribe(async (s) => {
-                    if (s === 'SUBSCRIBED') await chatChannel.track({ online_at: new Date().toISOString() });
-                });
-        }
-
-        async function loadMessages() {
-            const { data } = await _supabase.from('messages').select('*').order('id', { ascending: true }).limit(50);
-            if(data) data.forEach(msg => appendMessage(msg));
-        }
-
-        function appendMessage(msg) {
-            const chatBox = document.getElementById('chat-box');
-            const isMe = msg.sender_id === myProfile.id;
-            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            const div = document.createElement('div');
-            div.className = `msg-container ${isMe ? 'me' : 'others'}`;
-            div.onclick = () => setReply(msg.sender_name, msg.content);
-
-            let replyHtml = msg.reply_to_name ? `<div class="reply-quoted"><b>@${msg.reply_to_name}</b><br>${msg.reply_to_msg}</div>` : '';
-            const roleColor = msg.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)';
-
-            div.innerHTML = `
-                ${replyHtml}
-                <div class="sender-name">
-                    <span style="color: ${roleColor}">${isMe ? 'Wewe' : msg.sender_name}</span>
-                    <span class="role-badge" style="background: ${roleColor}">${msg.sender_role}</span>
-                </div>
-                <div class="text">${msg.content}</div>
-                <div class="msg-footer">
-                    <span>${time}</span>
-                    ${isMe ? '<i class="fas fa-check tick"></i>' : ''}
-                </div>
-            `;
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function setReply(name, text) {
-            replyData = { name, text };
-            document.getElementById('reply-preview-bar').style.display = 'flex';
-            document.getElementById('reply-info').innerHTML = `<small style="color:var(--gold)">Kujibu @${name}</small><br>${text.substring(0, 35)}...`;
-            document.getElementById('msg-input').focus();
-        }
-
-        function cancelReply() {
-            replyData = null;
-            document.getElementById('reply-preview-bar').style.display = 'none';
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if(!text) return;
-
-            const newMessage = {
-                sender_id: myProfile.id,
-                sender_name: myProfile.username || myProfile.full_name,
-                sender_role: myProfile.role || 'worker',
-                content: text,
-                reply_to_name: replyData ? replyData.name : null,
-                reply_to_msg: replyData ? replyData.text : null
-            };
-
-            input.value = '';
-            cancelReply();
-            await _supabase.from('messages').insert([newMessage]);
-        }
-
-        document.getElementById('msg-input').addEventListener("keyup", (e) => {
-            if (e.key === "Enter") sendMessage();
+        // REALTIME ENGINE
+        const channel = _client.channel('room1', { config: { presence: { key: user.id } } });
+        
+        channel
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, p => {
+            render(p.new);
+            if (p.new.sender_id !== me.id && Notification.permission === "granted") {
+                new Notification(p.new.sender_name, { body: p.new.content });
+            }
+        })
+        .on('presence', { event: 'sync' }, () => {
+            const online = Object.keys(channel.presenceState()).length;
+            document.getElementById('active-count').innerHTML = `<i class="fas fa-circle" style="font-size:0.5rem"></i> ${online} Active sasa hivi`;
+        })
+        .subscribe(async (s) => {
+            if (s === 'SUBSCRIBED') await channel.track({ online_at: new Date() });
         });
+    }
 
-        start();
-    </script>
+    function render(m) {
+        const win = document.getElementById('chat-window');
+        const isMe = m.sender_id === me.id;
+        const div = document.createElement('div');
+        div.className = `msg ${isMe ? 'sent' : 'received'}`;
+        div.onclick = () => setReply(m.sender_name, m.content);
+
+        let replyHtml = m.reply_to_name ? `<div class="reply-card"><b>@${m.reply_to_name}</b><br>${m.reply_to_msg}</div>` : '';
+        const roleCol = m.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)';
+
+        div.innerHTML = `
+            ${replyHtml}
+            <div class="sender">
+                <span style="color:${roleCol}">${isMe ? 'Wewe' : m.sender_name}</span>
+                <span class="badge" style="background:${roleCol}">${m.sender_role}</span>
+            </div>
+            ${m.content}
+            <div class="msg-info">
+                ${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                ${isMe ? '<i class="fas fa-check-double tick-blue"></i>' : ''}
+            </div>
+        `;
+        win.appendChild(div);
+        win.scrollTop = win.scrollHeight;
+    }
+
+    function setReply(name, text) {
+        selectedReply = { name, text };
+        document.getElementById('reply-preview').style.display = 'flex';
+        document.getElementById('reply-text').innerHTML = `<small style="color:var(--gold)">Kujibu @${name}</small><br>${text}`;
+        document.getElementById('msg-input').focus();
+    }
+
+    function cancelReply() {
+        selectedReply = null;
+        document.getElementById('reply-preview').style.display = 'none';
+    }
+
+    async function send() {
+        const input = document.getElementById('msg-input');
+        const val = input.value.trim();
+        if(!val) return;
+
+        const data = {
+            sender_id: me.id,
+            sender_name: me.username || me.full_name,
+            sender_role: me.role || 'worker',
+            content: val,
+            reply_to_name: selectedReply ? selectedReply.name : null,
+            reply_to_msg: selectedReply ? selectedReply.text : null
+        };
+
+        input.value = '';
+        cancelReply();
+        await _client.from('messages').insert([data]);
+    }
+
+    document.getElementById('msg-input').onkeyup = (e) => { if(e.key === "Enter") send(); };
+    init();
+</script>
 </body>
 </html>
