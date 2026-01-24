@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uhakiki wa Kazi | EMR Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; --success: #22c55e; --error: #ef4444; --slate: #94a3b8; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: white; padding: 15px; }
+
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        .section-title { font-size: 0.8rem; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
+
+        /* Order Card */
+        .order-card { 
+            background: linear-gradient(145deg, #1e293b, #0f172a); 
+            border-radius: 24px; padding: 20px; margin-bottom: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .worker-id { font-size: 0.75rem; color: var(--slate); display: flex; align-items: center; gap: 5px; }
+        
+        /* Auto-Pay Timer Badge */
+        .timer-badge { 
+            background: rgba(255, 201, 71, 0.1); border: 1px solid var(--gold);
+            color: var(--gold); padding: 5px 12px; border-radius: 50px; 
+            font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
+        }
+        .timer-warning { border-color: var(--error); color: var(--error); background: rgba(239, 68, 68, 0.1); }
+
+        .job-title { font-size: 1rem; font-weight: 800; margin-bottom: 10px; color: #fff; }
+        
+        .proof-container { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin: 12px 0; border: 1px solid #334155; }
+        .proof-img { width: 100%; max-height: 300px; object-fit: cover; display: block; transition: 0.3s; }
+        .proof-img:active { transform: scale(1.05); }
+        .zoom-hint { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px; border-radius: 5px; font-size: 0.6rem; }
+
+        .comment-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 0.8rem; color: var(--slate); border-left: 3px solid var(--gold); }
+
+        /* Buttons */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .btn { padding: 16px; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; font-size: 0.85rem; transition: 0.3s; text-transform: uppercase; }
+        .btn-approve { background: var(--success); color: #fff; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2); }
+        .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid var(--error); }
+        .btn:active { transform: scale(0.95); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 50px 20px; opacity: 0.5; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="merchant_dashboard.html" style="color:white; text-decoration:none;"><i class="fas fa-chevron-left"></i></a>
+        <p class="section-title">Uhakiki wa Kazi</p>
+        <i class="fas fa-history" style="opacity:0.5"></i>
+    </div>
+
+    <div id="orders-list">
+        <div class="empty-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Inatafuta submissions...</p>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function fetchSubmissions() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            
+            const { data, error } = await _supabase
+                .from('submissions')
+                .select('*, jobs!inner(merchant_id, title)')
+                .eq('jobs.merchant_id', user.id)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: true });
+
+            const container = document.getElementById('orders-list');
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <p>Kazi zote zimekaguliwa!</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = data.map(sub => {
+                const hoursLeft = calculateHoursLeft(sub.created_at);
+                const isUrgent = hoursLeft < 5;
+                
+                return `
+                <div class="order-card">
+                    <div class="card-top">
+                        <div class="worker-id">
+                            <i class="fas fa-fingerprint"></i> ID: ${sub.worker_id.substring(0, 8)}
+                        </div>
+                        <div class="timer-badge ${isUrgent ? 'timer-warning' : ''}">
+                            <i class="fas fa-clock"></i> ${hoursLeft}h left to Auto-Pay
+                        </div>
+                    </div>
+
+                    <h2 class="job-title">${sub.jobs.title}</h2>
+                    
+                    <div class="proof-container">
+                        <img src="${sub.proof_url}" class="proof-img" onclick="window.open(this.src)">
+                        <div class="zoom-hint"><i class="fas fa-search-plus"></i> Tap to zoom</div>
+                    </div>
+
+                    <div class="comment-box">
+                        <b>Maelezo:</b> ${sub.comment || "Hana maelezo."}
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-reject" onclick="processTask('${sub.id}', 'rejected')">Reject</button>
+                        <button class="btn btn-approve" onclick="processTask('${sub.id}', 'approved', '${sub.worker_id}', ${sub.pay_amount})">Approve & Pay</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function calculateHoursLeft(createdAt) {
+            const created = new Date(createdAt);
+            const now = new Date();
+            const diffInMs = now - created;
+            const diffInHours = diffInMs / (1000 * 60 * 60);
+            const remaining = 24 - diffInHours;
+            return remaining > 0 ? Math.floor(remaining) : 0;
+        }
+
+        async function processTask(subId, status, workerId = null, amount = 0) {
+            if (status === 'approved') {
+                const { error } = await _supabase.rpc('approve_worker_payment', {
+                    submission_id: subId,
+                    worker_id_input: workerId,
+                    amount_input: amount
+                });
+                if (!error) { alert("Malipo yamefanikiwa!"); fetchSubmissions(); }
+            } else {
+                if(confirm("Hakika unakataa kazi hii?")) {
+                    await _supabase.from('submissions').update({ status: 'rejected' }).eq('id', subId);
+                    fetchSubmissions();
+                }
+            }
+        }
+
+        // Kazi ya kusafisha miamala ya zamani (Saa 24 Auto-Pay)
+        async function runAutoPayCheck() {
+            // Hapa tunaweza kuita RPC inayolipa kila aliyepitisha saa 24
+            await _supabase.rpc('check_and_autopay_submissions');
+        }
+
+        fetchSubmissions();
+        runAutoPayCheck();
+    </script>
+</body>
+</html>
