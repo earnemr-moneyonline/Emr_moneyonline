@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anzisha Kazi | EMR Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; padding: 20px; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.8rem; color: var(--gold); margin-bottom: 8px; }
+        input, textarea, select { 
+            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; 
+            background: var(--card); color: white; outline: none;
+        }
+        .cost-box { 
+            background: rgba(255, 201, 71, 0.1); padding: 20px; border-radius: 15px; 
+            border: 1px dashed var(--gold); text-align: center; margin-top: 20px;
+        }
+        .btn-post { 
+            width: 100%; background: var(--gold); color: black; padding: 18px; 
+            border-radius: 15px; border: none; font-weight: 800; margin-top: 20px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="merchant_dashboard.html" style="color:white"><i class="fas fa-arrow-left"></i></a>
+        <h3>Anzisha Kampeni Mpya</h3>
+    </div>
+
+    <div class="form-group">
+        <label>Kichwa cha Kazi (Mfano: Follow Instagram)</label>
+        <input type="text" id="job-title" placeholder="Ingiza kichwa cha habari...">
+    </div>
+
+    <div class="form-group">
+        <label>Maelekezo ya Kazi</label>
+        <textarea id="job-desc" rows="4" placeholder="Eleza nini mteja afanye..."></textarea>
+    </div>
+
+    <div class="form-group" style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label>Idadi ya Watu</label>
+            <input type="number" id="job-qty" value="10" oninput="calcCost()">
+        </div>
+        <div style="flex: 1;">
+            <label>Malipo kila mmoja</label>
+            <input type="number" id="job-pay" value="200" oninput="calcCost()">
+        </div>
+    </div>
+
+    <div class="cost-box">
+        <p style="font-size: 0.8rem; opacity: 0.7;">Jumla ya Gharama</p>
+        <h2 id="total-cost" style="color: var(--gold);">TZS 2,000</h2>
+    </div>
+
+    <button class="btn-post" onclick="submitJob()">RUSHISHA KAZI SASA</button>
+
+    <script>
+        function calcCost() {
+            const qty = document.getElementById('job-qty').value;
+            const pay = document.getElementById('job-pay').value;
+            document.getElementById('total-cost').innerText = "TZS " + (qty * pay).toLocaleString();
+        }
+
+        async function submitJob() {
+            alert("Kazi inapakiwa kwenye mfumo...");
+            // Hapa tutaweka logic ya ku-save kwenye table ya 'jobs' Supabase
+        }
+    </script>
+</body>
+</html>
