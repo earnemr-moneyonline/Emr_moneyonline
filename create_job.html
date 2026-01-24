@@ -3,74 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anzisha Kazi | EMR Pro</title>
+    <title>Anzisha Kampeni | EMR Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 0.8rem; color: var(--gold); margin-bottom: 8px; }
-        input, textarea, select { 
-            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; 
-            background: var(--card); color: white; outline: none;
+        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; --error: #ff4757; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: white; padding: 15px; }
+
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        
+        /* Category Selector */
+        .category-grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; 
+            margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px;
         }
-        .cost-box { 
-            background: rgba(255, 201, 71, 0.1); padding: 20px; border-radius: 15px; 
-            border: 1px dashed var(--gold); text-align: center; margin-top: 20px;
+        .cat-item { 
+            background: var(--card); padding: 12px; border-radius: 12px; 
+            text-align: center; border: 2px solid transparent; cursor: pointer; transition: 0.3s;
         }
-        .btn-post { 
-            width: 100%; background: var(--gold); color: black; padding: 18px; 
-            border-radius: 15px; border: none; font-weight: 800; margin-top: 20px; cursor: pointer;
+        .cat-item.active { border-color: var(--gold); background: rgba(255, 201, 71, 0.1); }
+        .cat-item i { font-size: 1.4rem; margin-bottom: 5px; display: block; }
+        .cat-item p { font-size: 0.6rem; font-weight: 600; white-space: nowrap; }
+
+        /* Form Styling */
+        .form-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #334155; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; color: var(--gold); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; }
+        
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper i { position: absolute; left: 15px; color: var(--gold); }
+        input, textarea { 
+            width: 100%; padding: 14px 14px 14px 45px; border-radius: 12px; 
+            border: 1px solid #334155; background: #0f172a; color: white; outline: none; font-size: 0.9rem;
         }
+        
+        .cost-summary { 
+            background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; 
+            margin: 20px 0; border: 1px solid rgba(255, 201, 71, 0.2);
+        }
+        .cost-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; }
+        
+        .btn-launch { 
+            width: 100%; padding: 18px; background: var(--gold); border: none; 
+            border-radius: 15px; font-weight: 800; color: #000; cursor: pointer; font-size: 1rem;
+        }
+        .btn-launch:disabled { background: #475569; opacity: 0.5; }
+
+        /* Icon Colors */
+        .fa-instagram { color: #E1306C; }
+        .fa-tiktok { color: #00f2ea; }
+        .fa-youtube { color: #FF0000; }
+        .fa-whatsapp { color: #25D366; }
+        .fa-google-play { color: #3BCCFF; }
+        .fa-twitter { color: #1DA1F2; }
     </style>
 </head>
 <body>
+
     <div class="header">
         <a href="merchant_dashboard.html" style="color:white"><i class="fas fa-arrow-left"></i></a>
-        <h3>Anzisha Kampeni Mpya</h3>
+        <h3 style="font-size: 1rem;">Anzisha Kampeni Mpya</h3>
     </div>
 
-    <div class="form-group">
-        <label>Kichwa cha Kazi (Mfano: Follow Instagram)</label>
-        <input type="text" id="job-title" placeholder="Ingiza kichwa cha habari...">
-    </div>
-
-    <div class="form-group">
-        <label>Maelekezo ya Kazi</label>
-        <textarea id="job-desc" rows="4" placeholder="Eleza nini mteja afanye..."></textarea>
-    </div>
-
-    <div class="form-group" style="display: flex; gap: 10px;">
-        <div style="flex: 1;">
-            <label>Idadi ya Watu</label>
-            <input type="number" id="job-qty" value="10" oninput="calcCost()">
+    <p style="font-size: 0.75rem; margin-bottom: 10px; opacity: 0.7;">1. CHAGUA PLATFORM:</p>
+    <div class="category-grid">
+        <div class="cat-item active" onclick="setJob('Instagram Follow', 'fa-instagram', 'https://instagram.com/')">
+            <i class="fab fa-instagram"></i><p>Instagram</p>
         </div>
-        <div style="flex: 1;">
-            <label>Malipo kila mmoja</label>
-            <input type="number" id="job-pay" value="200" oninput="calcCost()">
+        <div class="cat-item" onclick="setJob('TikTok Follow/Like', 'fa-tiktok', 'https://tiktok.com/@')">
+            <i class="fab fa-tiktok"></i><p>TikTok</p>
+        </div>
+        <div class="cat-item" onclick="setJob('YouTube Sub', 'fa-youtube', 'https://youtube.com/')">
+            <i class="fab fa-youtube"></i><p>YouTube</p>
+        </div>
+        <div class="cat-item" onclick="setJob('App Download', 'fa-google-play', 'https://play.google.com/')">
+            <i class="fab fa-google-play"></i><p>Play Store</p>
+        </div>
+        <div class="cat-item" onclick="setJob('WhatsApp Group', 'fa-whatsapp', 'https://chat.whatsapp.com/')">
+            <i class="fab fa-whatsapp"></i><p>WhatsApp</p>
+        </div>
+        <div class="cat-item" onclick="setJob('Twitter/X Follow', 'fa-twitter', 'https://x.com/')">
+            <i class="fab fa-twitter"></i><p>Twitter (X)</p>
+        </div>
+        <div class="cat-item" onclick="setJob('Website Visit', 'fa-globe', 'https://')">
+            <i class="fas fa-globe"></i><p>Web Visit</p>
+        </div>
+        <div class="cat-item" onclick="setJob('Telegram Join', 'fa-telegram', 'https://t.me/')">
+            <i class="fab fa-telegram"></i><p>Telegram</p>
         </div>
     </div>
 
-    <div class="cost-box">
-        <p style="font-size: 0.8rem; opacity: 0.7;">Jumla ya Gharama</p>
-        <h2 id="total-cost" style="color: var(--gold);">TZS 2,000</h2>
-    </div>
+    <div class="form-card">
+        <div class="input-group">
+            <label id="label-link">Link ya Instagram</label>
+            <div class="input-wrapper">
+                <i id="main-icon" class="fab fa-instagram"></i>
+                <input type="url" id="job-url" placeholder="Weka link hapa...">
+            </div>
+        </div>
 
-    <button class="btn-post" onclick="submitJob()">RUSHISHA KAZI SASA</button>
+        <div class="input-group">
+            <label>Maelekezo kwa Mfanyakazi</label>
+            <div class="input-wrapper" style="align-items: flex-start; padding-top: 10px;">
+                <i class="fas fa-info-circle"></i>
+                <textarea id="job-desc" rows="3" placeholder="Mfano: Follow akaunti hii na usije ku-unfollow baadaye."></textarea>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="input-group">
+                <label>Watu Wangapi?</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-users"></i>
+                    <input type="number" id="job-slots" value="50" oninput="updateCost()" style="padding-left: 45px;">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Malipo (Min 50)</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-coins"></i>
+                    <input type="number" id="job-pay" value="50" oninput="updateCost()" style="padding-left: 45px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="cost-summary">
+            <div class="cost-row"><span>Gharama ya Kampeni:</span> <b id="total-cost" style="color:var(--gold)">TZS 2,500</b></div>
+            <div class="cost-row"><span>Salio Lako:</span> <span id="my-balance">TZS 0</span></div>
+        </div>
+
+        <button id="launch-btn" class="btn-launch" onclick="launchNow()">RUSHISHA KAZI HEWANI</button>
+    </div>
 
     <script>
-        function calcCost() {
-            const qty = document.getElementById('job-qty').value;
-            const pay = document.getElementById('job-pay').value;
-            document.getElementById('total-cost').innerText = "TZS " + (qty * pay).toLocaleString();
+        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let userBalance = 0;
+        let selectedJobTitle = "Instagram Follow";
+
+        function setJob(title, iconClass, placeholder) {
+            selectedJobTitle = title;
+            document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            document.getElementById('label-link').innerText = "Link ya " + title;
+            document.getElementById('main-icon').className = "fab " + iconClass;
+            document.getElementById('job-url').placeholder = placeholder;
         }
 
-        async function submitJob() {
-            alert("Kazi inapakiwa kwenye mfumo...");
-            // Hapa tutaweka logic ya ku-save kwenye table ya 'jobs' Supabase
+        async function getBalance() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            const { data } = await _supabase.from('profiles').select('balance').eq('id', user.id).maybeSingle();
+            userBalance = data ? data.balance : 0;
+            document.getElementById('my-balance').innerText = "TZS " + userBalance.toLocaleString();
+            updateCost();
         }
+
+        function updateCost() {
+            const slots = document.getElementById('job-slots').value || 0;
+            const pay = document.getElementById('job-pay').value || 0;
+            const total = slots * pay;
+            
+            document.getElementById('total-cost').innerText = "TZS " + total.toLocaleString();
+            const btn = document.getElementById('launch-btn');
+            
+            if (total > userBalance || pay < 50 || slots < 1) {
+                btn.disabled = true;
+                btn.innerText = total > userBalance ? "SALIO HALITOSHI" : "MALIPO MIN 50 TZS";
+            } else {
+                btn.disabled = false;
+                btn.innerText = "RUSHISHA KAZI HEWANI";
+            }
+        }
+
+        async function launchNow() {
+            const slots = parseInt(document.getElementById('job-slots').value);
+            const pay = parseInt(document.getElementById('job-pay').value);
+            const total = slots * pay;
+            const link = document.getElementById('job-url').value;
+            const desc = document.getElementById('job-desc').value;
+
+            if(!link) return alert("Weka link kwanza!");
+
+            const { data: { user } } = await _supabase.auth.getUser();
+
+            // Punguza Salio
+            const { error: balErr } = await _supabase.from('profiles')
+                .update({ balance: userBalance - total })
+                .eq('id', user.id);
+
+            if(!balErr) {
+                // Insert Job
+                await _supabase.from('jobs').insert([{
+                    merchant_id: user.id,
+                    title: selectedJobTitle,
+                    description: desc + "\nLink: " + link,
+                    total_slots: slots,
+                    remaining_slots: slots,
+                    pay_per_worker: pay,
+                    total_cost: total,
+                    status: 'active'
+                }]);
+                
+                alert("Kampeni Imerushwa!");
+                window.location.href = "merchant_dashboard.html";
+            }
+        }
+
+        getBalance();
     </script>
 </body>
 </html>
