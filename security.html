@@ -9,99 +9,91 @@
     <style>
         :root { --bg: #020617; --safe: #22c55e; --gold: #ffc947; --card: #111827; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; padding: 20px; }
+        body { background: var(--bg); color: white; padding: 20px; text-align: center; }
 
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-        .safe-icon { color: var(--safe); font-size: 2rem; }
-
-        /* Escrow Shield Card */
-        .shield-card { 
-            background: linear-gradient(135deg, #064e3b 0%, #020617 100%);
-            border-radius: 25px; padding: 25px; border: 1px solid var(--safe);
-            position: relative; overflow: hidden; margin-bottom: 25px;
+        .shield-box { 
+            background: linear-gradient(145deg, #064e3b, #020617);
+            border: 2px solid var(--safe); border-radius: 30px;
+            padding: 40px 20px; margin-top: 30px; position: relative;
         }
-        .shield-card::after {
-            content: '\f3ed'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
-            position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.1;
-        }
+        .lock-icon { font-size: 3rem; color: var(--safe); margin-bottom: 15px; }
+        .amount-display { font-size: 2.5rem; font-weight: 900; margin: 10px 0; color: #fff; }
+        
+        .status-badge { background: var(--safe); color: #000; padding: 5px 15px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; }
 
-        .escrow-amt { font-size: 2rem; font-weight: 900; margin: 10px 0; }
-        .badge { background: var(--safe); color: black; padding: 4px 10px; border-radius: 5px; font-size: 0.6rem; font-weight: 800; }
+        .details-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 30px; text-align: left; }
+        .detail-item { background: #1f2937; padding: 20px; border-radius: 15px; display: flex; align-items: center; gap: 15px; }
+        .detail-item i { color: var(--gold); font-size: 1.2rem; }
+        .detail-item h4 { font-size: 0.9rem; margin-bottom: 2px; }
+        .detail-item p { font-size: 0.7rem; opacity: 0.6; }
 
-        /* Security Logs */
-        .log-section { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #1f2937; }
-        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #1f2937; }
-        .log-item:last-child { border: none; }
-        .log-info h4 { font-size: 0.85rem; margin-bottom: 4px; }
-        .log-info p { font-size: 0.7rem; opacity: 0.5; }
-        .log-status { font-size: 0.8rem; font-weight: 700; color: var(--safe); }
-
-        .btn-back { display: block; text-align: center; margin-top: 30px; color: var(--gold); text-decoration: none; font-size: 0.85rem; }
+        .btn-refresh { margin-top: 20px; background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <i class="fas fa-shield-halved safe-icon"></i>
-        <div>
-            <h3>Kituo cha Usalama</h3>
-            <p style="font-size: 0.7rem; opacity: 0.6;">Ulinzi wa Pesa na Data (End-to-End)</p>
+    <div class="shield-box">
+        <i class="fas fa-shield-check lock-icon"></i><br>
+        <span class="status-badge">ULINZI WA ESCROW UMEWASHWA</span>
+        <p style="margin-top: 20px; font-size: 0.8rem; opacity: 0.7;">Pesa ya Kazi Zilizopostiwa:</p>
+        <h1 class="amount-display" id="security-balance">TZS 0</h1>
+        <p style="font-size: 0.65rem; color: var(--safe);">Inalindwa na EMR Smart-Contract Logic</p>
+    </div>
+
+    <div class="details-grid">
+        <div class="detail-item">
+            <i class="fas fa-lock-hashtag"></i>
+            <div>
+                <h4>Uthibitisho wa Picha</h4>
+                <p>Huwezi kulipa mpaka uhakiki ushahidi wa kazi.</p>
+            </div>
+        </div>
+        <div class="detail-item">
+            <i class="fas fa-undo"></i>
+            <div>
+                <h4>Refund Policy</h4>
+                <p>Kazi ikighairiwa, pesa inarudi Wallet yako papo hapo.</p>
+            </div>
         </div>
     </div>
 
-    <div class="shield-card">
-        <span class="badge">ESCROW ACTIVE</span>
-        <p style="font-size: 0.75rem; margin-top: 15px; opacity: 0.8;">Pesa Inayolindwa (In-Transit):</p>
-        <h1 class="escrow-amt" id="escrow-val">TZS 0</h1>
-        <p style="font-size: 0.65rem; opacity: 0.7;"><i class="fas fa-info-circle"></i> Hii ni pesa iliyohifadhiwa kwa ajili ya kulipa kazi ambazo bado huzijathibitisha.</p>
-    </div>
-
-    <h4 style="margin-bottom: 15px; font-size: 0.9rem;">LOGS ZA USALAMA</h4>
-    <div class="log-section" id="logs-container">
-        <p style="text-align: center; opacity: 0.3; padding: 20px;">Hakuna kumbukumbu za hivi karibuni...</p>
-    </div>
-
-    <a href="wallet.html" class="btn-back"><i class="fas fa-arrow-left"></i> Rudi Kwenye Wallet</a>
+    <button class="btn-refresh" onclick="calculateRealEscrow()">HAKIKI DATA SIKU HIZI</button>
 
     <script>
         const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function loadSecurityData() {
+        async function calculateRealEscrow() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) return;
+            if(!user) return;
 
-            // 1. Vuta Salio la Escrow
-            const { data: profile } = await _supabase.from('profiles').select('escrow_balance').eq('id', user.id).single();
-            if (profile) {
-                document.getElementById('escrow-val').innerText = "TZS " + (profile.escrow_balance || 0).toLocaleString();
+            // NJIA YA UHAKIKA: Tunajumlisha gharama ya kazi zote ambazo bado zina SLOTS
+            const { data: jobs, error } = await _supabase
+                .from('jobs')
+                .select('pay_per_worker, remaining_slots')
+                .eq('merchant_id', user.id);
+
+            if (error) {
+                console.error("Shida ya database:", error.message);
+                return;
             }
 
-            // 2. Vuta Logs (Hapa tunatumia submissions za sasa kama mfano wa logs)
-            const { data: logs } = await _supabase
-                .from('submissions')
-                .select('*, jobs(title)')
-                .limit(5)
-                .order('created_at', { ascending: false });
-
-            const container = document.getElementById('logs-container');
-            if (logs && logs.length > 0) {
-                container.innerHTML = logs.map(log => `
-                    <div class="log-item">
-                        <div class="log-info">
-                            <h4>${log.jobs.title}</h4>
-                            <p>${new Date(log.created_at).toLocaleString('sw-TZ')}</p>
-                        </div>
-                        <div class="log-status">
-                            ${log.status === 'pending' ? 'SECURED' : 'RELEASED'}
-                        </div>
-                    </div>
-                `).join('');
+            let totalEscrow = 0;
+            if (jobs) {
+                jobs.forEach(job => {
+                    totalEscrow += (job.pay_per_worker * job.remaining_slots);
+                });
             }
+
+            // Onyesha data kwenye kioo
+            document.getElementById('security-balance').innerText = "TZS " + totalEscrow.toLocaleString();
+            
+            // Pia, update hili salio kwenye table ya profiles kwa ajili ya usalama zaidi
+            await _supabase.from('profiles').update({ escrow_balance: totalEscrow }).eq('id', user.id);
         }
 
-        loadSecurityData();
+        calculateRealEscrow();
     </script>
 </body>
 </html>
