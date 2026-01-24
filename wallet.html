@@ -8,143 +8,161 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #000000; --accent: #ff0050; --gold: #ffc947; --card: #121212; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lexend', sans-serif; }
-        body { background: var(--bg); color: white; padding-bottom: 80px; }
+        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; --slate: #94a3b8; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; padding: 20px; }
 
-        /* Profile Header (TikTok Style) */
-        .header { padding: 40px 20px 20px; text-align: center; }
-        .pfp-area { position: relative; width: 100px; height: 100px; margin: 0 auto; }
-        .pfp-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
-        .edit-pfp { position: absolute; bottom: 0; right: 0; background: var(--accent); color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #000; }
-        
-        .username { margin-top: 15px; font-weight: 700; font-size: 1.2rem; }
-        .bio { font-size: 0.85rem; opacity: 0.6; margin: 5px 0 15px; }
-
-        /* Stats Row */
-        .stats-row { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; }
-        .stat-box { text-align: center; }
-        .stat-num { font-weight: 800; font-size: 1.1rem; display: block; }
-        .stat-label { font-size: 0.75rem; opacity: 0.5; }
+        /* Merchant Identity Section */
+        .merchant-header { text-align: center; padding: 30px 0; border-bottom: 1px solid #1e293b; }
+        .merchant-badge { 
+            background: rgba(255, 201, 71, 0.1); color: var(--gold); 
+            padding: 5px 15px; border-radius: 50px; font-size: 0.65rem; 
+            font-weight: 800; border: 1px solid var(--gold); display: inline-block;
+            margin-bottom: 10px;
+        }
+        .username-display { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; }
 
         /* Wallet Section */
-        .wallet-banner { background: var(--card); margin: 0 15px; border-radius: 15px; padding: 20px; border: 1px solid #333; }
-        .bal-title { font-size: 0.7rem; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-        .bal-val { font-size: 2.2rem; font-weight: 900; margin: 5px 0; }
+        .wallet-card { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+            border-radius: 25px; padding: 30px; margin-top: 25px;
+            border: 1px solid rgba(255,255,255,0.05); position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .balance-label { font-size: 0.75rem; color: var(--slate); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-size: 2.5rem; font-weight: 900; margin: 10px 0; color: #fff; }
+        
+        .topup-btn { 
+            width: 100%; padding: 15px; background: var(--gold); color: #000; 
+            border: none; border-radius: 12px; font-weight: 800; font-size: 1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
 
-        /* Real-Time Graph */
-        .graph-section { padding: 20px; margin-top: 20px; }
-        .graph-card { background: var(--card); border-radius: 20px; padding: 15px; border: 1px solid #222; }
+        /* Statistics Area */
+        .stats-container { margin-top: 30px; }
+        .section-title { font-size: 0.85rem; font-weight: 700; color: var(--gold); margin-bottom: 15px; text-transform: uppercase; }
+        .chart-box { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; }
 
-        /* Followers List */
-        .follower-card { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid #111; }
-        .f-img { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; background: #222; }
-        .f-name { font-size: 0.9rem; font-weight: 600; flex: 1; }
-        .wa-link { color: #25D366; font-size: 1.2rem; text-decoration: none; }
+        /* Quick Info Grid */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .info-item { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #1e293b; }
+        .info-item span { display: block; font-size: 0.65rem; color: var(--slate); margin-bottom: 5px; }
+        .info-item b { font-size: 1.1rem; }
+
+        /* Bottom Menu */
+        .settings-link { margin-top: 40px; text-align: center; border-top: 1px solid #1e293b; padding-top: 20px; }
+        .settings-btn { color: var(--slate); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="pfp-area">
-            <img id="my-avatar" src="https://via.placeholder.com/100" class="pfp-img">
-            <label for="pfp-upload" class="edit-pfp"><i class="fas fa-plus"></i></label>
-            <input type="file" id="pfp-upload" hidden onchange="uploadPFP(this)">
-        </div>
-        <div class="username" id="my-name" contenteditable="true" onblur="updateDB()">@loading...</div>
-        <div class="bio" id="my-bio" contenteditable="true" onblur="updateDB()">Gusa hapa kuandika bio yako...</div>
-        
-        <div class="stats-row">
-            <div class="stat-box">
-                <span class="stat-num" id="count-followers">0</span>
-                <span class="stat-label">Followers</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-num" id="count-jobs">0</span>
-                <span class="stat-label">Kazi Zilizopitishwa</span>
-            </div>
-        </div>
+    <div class="merchant-header">
+        <div class="merchant-badge"><i class="fas fa-check-circle"></i> OFFICIAL MERCHANT</div>
+        <h2 class="username-display" id="display-username">@loading...</h2>
+    </div>
 
-        <div class="wallet-banner">
-            <p class="bal-title">Salio la Biashara</p>
-            <p class="bal-val" id="my-balance">TZS 0</p>
-            <button onclick="location.href='deposit.html'" style="width:100%; padding:12px; background:#fff; color:#000; border-radius:8px; font-weight:bold; border:none; margin-top:10px;">WEKA PESA</button>
+    <div class="wallet-card">
+        <p class="balance-label">Salio la Kampeni</p>
+        <h1 class="balance-value" id="real-balance">TZS 0</h1>
+        <button class="topup-btn" onclick="location.href='deposit.html'">
+            <i class="fas fa-wallet"></i> WEKA PESA
+        </button>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <span>Followers</span>
+            <b id="count-followers">0</b>
+        </div>
+        <div class="info-item">
+            <span>Kazi Zilizolipwa</span>
+            <b id="count-jobs">0</b>
         </div>
     </div>
 
-    <div class="graph-section">
-        <p style="font-size: 0.8rem; font-weight: 700; margin-bottom: 10px;">MWENENDO WA KAZI (REAL DATA)</p>
-        <div class="graph-card">
-            <canvas id="realChart"></canvas>
+    <div class="stats-container">
+        <p class="section-title">Mwenendo wa Kazi</p>
+        <div class="chart-box">
+            <canvas id="merchantChart"></canvas>
         </div>
     </div>
 
-    <div id="followers-list">
-        <p style="padding: 20px 20px 10px; font-size: 0.8rem; font-weight: 700; opacity: 0.5;">WAFANYAKAZI WAKO (FOLLOWERS)</p>
-        </div>
+    <div class="settings-link">
+        <a href="merchant_dashboard.html" class="settings-btn">
+            <i class="fas fa-th-large"></i> Rudi Kwenye Dashboard
+        </a>
+    </div>
 
     <script>
-        // Supabase configuration
-        const _supabase = supabase.createClient('URL', 'KEY');
+        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function init() {
+        async function syncMerchantWallet() {
             const { data: { user } } = await _supabase.auth.getUser();
-            
-            // 1. Vuta Profile
-            const { data: profile } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
-            if(profile) {
-                document.getElementById('my-name').innerText = profile.full_name;
-                document.getElementById('my-bio').innerText = profile.bio || "Mjasiriamali";
-                document.getElementById('my-balance').innerText = "TZS " + profile.balance.toLocaleString();
-                if(profile.avatar_url) document.getElementById('my-avatar').src = profile.avatar_url;
+            if (!user) return;
+
+            // 1. Vuta data za akaunti toka profiles
+            const { data: profile } = await _supabase
+                .from('profiles')
+                .select('username, balance, full_name')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                // Tunatumia username, ikiwa haina tunatumia jina la kwanza
+                document.getElementById('display-username').innerText = "@" + (profile.username || profile.full_name.split(' ')[0]).toLowerCase();
+                document.getElementById('real-balance').innerText = "TZS " + profile.balance.toLocaleString();
             }
 
-            // 2. Vuta Followers wa kweli (Watu waliokufuata - Utahitaji table ya follows)
-            const { count: followCount } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('merchant_id', user.id);
-            document.getElementById('count-followers').innerText = followCount || 0;
+            // 2. Vuta idadi ya Followers (Real Data)
+            const { count: fCount } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('merchant_id', user.id);
+            document.getElementById('count-followers').innerText = fCount || 0;
 
-            // 3. Vuta idadi ya Kazi zilizokamilika (Approved Submissions)
-            const { count: jobCount } = await _supabase.from('submissions')
+            // 3. Vuta idadi ya Kazi (Approved Submissions)
+            const { count: jCount } = await _supabase.from('submissions')
                 .select('*, jobs!inner(merchant_id)', { count: 'exact' })
                 .eq('jobs.merchant_id', user.id)
                 .eq('status', 'approved');
-            document.getElementById('count-jobs').innerText = jobCount || 0;
+            document.getElementById('count-jobs').innerText = jCount || 0;
 
             loadGraph(user.id);
-            loadFollowers(user.id);
         }
 
-        async function loadGraph(mId) {
-            // Hapa tunavuta data za submissions za siku 7 zilizopita kwa merchant huyu
-            const { data } = await _supabase.rpc('get_merchant_stats', { m_id: mId });
+        async function loadGraph(merchantId) {
+            // Tunavuta data za siku 7 kutoka kwenye RPC uliyoi-run awali
+            const { data } = await _supabase.rpc('get_merchant_stats', { m_id: merchantId });
             
-            const ctx = document.getElementById('realChart').getContext('2d');
+            if (!data) return;
+
+            const ctx = document.getElementById('merchantChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.map(d => d.date), // Itatoka SQL
+                    labels: data.map(d => d.stats_date),
                     datasets: [{
                         label: 'Kazi',
-                        data: data.map(d => d.count),
-                        borderColor: '#ff0050',
-                        backgroundColor: 'rgba(255, 0, 80, 0.1)',
+                        data: data.map(d => d.stats_count),
+                        borderColor: '#ffc947',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffc947',
+                        tension: 0.4,
                         fill: true,
-                        tension: 0.4
+                        backgroundColor: 'rgba(255, 201, 71, 0.05)'
                     }]
                 },
-                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: false },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
             });
         }
 
-        async function updateDB() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            await _supabase.from('profiles').update({
-                full_name: document.getElementById('my-name').innerText,
-                bio: document.getElementById('my-bio').innerText
-            }).eq('id', user.id);
-        }
-
-        init();
+        syncMerchantWallet();
     </script>
 </body>
 </html>
