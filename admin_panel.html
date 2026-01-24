@@ -1,1 +1,169 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMR | Admin Control Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; --success: #22c55e; --danger: #ef4444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: white; padding: 20px; }
+
+        .header { margin-bottom: 30px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+        .header h2 { color: var(--gold); font-size: 1.4rem; }
+
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-card p { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; }
+        .stat-card b { font-size: 1.2rem; color: var(--gold); }
+
+        .section-title { font-size: 0.85rem; color: var(--gold); margin-bottom: 15px; text-transform: uppercase; font-weight: 700; }
+
+        /* Transaction Cards */
+        .deposit-card { 
+            background: var(--card); border-radius: 18px; padding: 20px; margin-bottom: 15px; 
+            border: 1px solid rgba(255,255,255,0.05); animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .user-info { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .user-info b { font-size: 0.9rem; color: #fff; }
+        .user-info span { font-size: 0.75rem; color: var(--gold); }
+
+        .trans-details { margin: 10px 0; }
+        .trans-details p { font-size: 0.8rem; margin-bottom: 4px; opacity: 0.8; }
+        .trans-id { background: rgba(255, 201, 71, 0.1); padding: 4px 8px; border-radius: 5px; color: var(--gold); font-weight: 800; font-family: monospace; }
+
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn { padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .btn-approve { background: var(--success); color: white; }
+        .btn-reject { background: var(--danger); color: white; }
+        .btn:active { transform: scale(0.95); }
+
+        .empty-state { text-align: center; padding: 50px 20px; opacity: 0.4; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="merchant_dashboard.html" style="color:white; text-decoration:none; font-size: 0.8rem;"><i class="fas fa-arrow-left"></i> Rudi Nyumbani</a>
+        <h2 style="margin-top:10px;">Admin Control Center</h2>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <p>Miamala Pending</p>
+            <b id="pending-count">0</b>
+        </div>
+        <div class="stat-card">
+            <p>Jumla ya Mapato</p>
+            <b id="total-revenue">0</b>
+        </div>
+    </div>
+
+    <p class="section-title">Miamala Inayosubiri (Pending)</p>
+    <div id="pending-list">
+        <div class="empty-state">Inapakia miamala...</div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function initAdmin() {
+            // 1. Hakikisha mtumiaji ni Admin kabla ya kufungua chochote
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return window.location.href = 'index.html';
+
+            const { data: profile } = await _supabase.from('profiles').select('is_admin').eq('id', user.id).single();
+            if (!profile || profile.is_admin !== 1) {
+                alert("Huna ruhusa ya kuingia hapa!");
+                window.location.href = 'merchant_dashboard.html';
+                return;
+            }
+
+            fetchPendingDeposits();
+            updateStats();
+        }
+
+        async function fetchPendingDeposits() {
+            // Vuta miamala yenye status ya 'pending'
+            const { data, error } = await _supabase
+                .from('deposits')
+                .select('*, profiles(full_name, username, balance)')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+
+            const container = document.getElementById('pending-list');
+            
+            if (error || !data || data.length === 0) {
+                container.innerHTML = '<div class="empty-state">Hakuna miamala mipya kwa sasa.</div>';
+                document.getElementById('pending-count').innerText = "0";
+                return;
+            }
+
+            document.getElementById('pending-count').innerText = data.length;
+
+            container.innerHTML = data.map(d => `
+                <div class="deposit-card" id="card-${d.id}">
+                    <div class="user-info">
+                        <b>${d.profiles.full_name || d.profiles.username}</b>
+                        <span>@${d.profiles.username}</span>
+                    </div>
+                    <div class="trans-details">
+                        <p>Kiasi: <b style="font-size:1rem;">TZS ${d.amount.toLocaleString()}</b></p>
+                        <p>Transaction ID: <span class="trans-id">${d.transaction_id}</span></p>
+                        <p style="font-size:0.6rem; opacity:0.5;">Muda: ${new Date(d.created_at).toLocaleString()}</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-reject" onclick="handleTransaction('${d.id}', '${d.user_id}', ${d.amount}, 'rejected')">REJECT</button>
+                        <button class="btn btn-approve" onclick="handleTransaction('${d.id}', '${d.user_id}', ${d.amount}, 'approved')">APPROVE</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleTransaction(depositId, userId, amount, newStatus) {
+            if (!confirm(`Una uhakika wa ${newStatus === 'approved' ? 'kukubali' : 'kukataa'} muamala huu?`)) return;
+
+            if (newStatus === 'approved') {
+                // 1. Ongeza Salio kwenye Profile ya User
+                // Tunatumia RPC (SQL Function) ili kuongeza balance kwa usalama
+                const { error: balError } = await _supabase.rpc('increment_balance', { 
+                    user_id: userId, 
+                    amount_to_add: amount 
+                });
+
+                if (balError) {
+                    alert("Hitilafu kuongeza salio: " + balError.message);
+                    return;
+                }
+            }
+
+            // 2. Badilisha Status ya Deposit
+            const { error: depError } = await _supabase
+                .from('deposits')
+                .update({ status: newStatus })
+                .eq('id', depositId);
+
+            if (!depError) {
+                alert(`Muamala umekuwa ${newStatus === 'approved' ? 'Approved' : 'Rejected'} mafanikio!`);
+                document.getElementById(`card-${depositId}`).remove();
+                updateStats();
+            }
+        }
+
+        async function updateStats() {
+            const { data } = await _supabase.from('deposits').select('amount').eq('status', 'approved');
+            const total = data ? data.reduce((sum, d) => sum + d.amount, 0) : 0;
+            document.getElementById('total-revenue').innerText = "TZS " + total.toLocaleString();
+        }
+
+        initAdmin();
+    </script>
+</body>
+</html>
 
