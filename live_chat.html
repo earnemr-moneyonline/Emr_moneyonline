@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMR Community | Admin Ultimate</title>
+    <title>EMR Community | Pro Slide Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,18 +15,15 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { height: 100vh; font-family: 'Segoe UI', Helvetica, sans-serif; background: var(--bg); color: var(--light-text); overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Toolbar ya Admin wakati wa kuchagua meseji */
-        #admin-toolbar { 
-            display: none; background: var(--admin); padding: 10px 16px; 
-            justify-content: space-between; align-items: center; height: 65px; 
-            position: fixed; top: 0; width: 100%; z-index: 1001;
-        }
-
+        /* Header */
         .header { 
             background: var(--header); padding: 10px 16px; display: flex; 
             justify-content: space-between; align-items: center; height: 65px; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 1000;
         }
+        .online-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 5px var(--green); }
+        .online-status { font-size: 0.8rem; color: var(--green); font-weight: bold; }
 
+        /* Chat Window with Wallpaper */
         #chat-window { 
             flex: 1; overflow-y: auto; padding: 15px;
             display: flex; flex-direction: column; gap: 10px; 
@@ -35,41 +32,40 @@
             background-size: 400px; scroll-behavior: smooth;
         }
 
-        .msg-container { position: relative; width: 100%; display: flex; flex-direction: column; transition: 0.2s; }
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 0.92rem; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        /* Message Bubble & Swipe Logic */
+        .msg-container { position: relative; width: 100%; display: flex; flex-direction: column; transition: transform 0.2s ease-out; cursor: pointer; touch-action: pan-y; }
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 0.92rem; position: relative; }
         .sent { align-self: flex-end; background: var(--me); border-top-right-radius: 0; }
         .received { align-self: flex-start; background: var(--others); border-top-left-radius: 0; }
         
-        .selected-msg { background: rgba(239, 68, 68, 0.4) !important; border: 2px solid var(--admin); }
-        .deleted-info { font-style: italic; opacity: 0.7; font-size: 0.82rem; color: #8696a0 !important; display: flex; align-items: center; gap: 5px; }
-
         .sender-row { font-size: 0.75rem; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
         .badge { font-size: 0.55rem; padding: 1px 4px; border-radius: 3px; color: #000; font-weight: 900; margin-left: 5px; }
+        .del-btn { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; opacity: 0.6; padding: 5px; }
+
+        /* Reply UI in Message */
+        .reply-in-msg { background: rgba(0,0,0,0.25); border-left: 3px solid var(--gold); padding: 5px; border-radius: 4px; margin-bottom: 5px; font-size: 0.8rem; opacity: 0.9; }
 
         .msg-footer { font-size: 0.62rem; display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 4px; opacity: 0.7; }
+        .tick-blue { color: #53bdeb; }
 
+        /* Input & Reply Preview Area */
         .bottom-area { background: var(--bg); z-index: 1000; }
-        #typing-indicator { height: 22px; padding-left: 20px; font-size: 0.78rem; color: var(--green); font-style: italic; visibility: hidden; }
+        #reply-preview { background: #1e2a30; padding: 8px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; animation: slideUp 0.2s; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        #typing-indicator { height: 20px; padding-left: 20px; font-size: 0.75rem; color: var(--green); font-style: italic; visibility: hidden; }
         
         .input-bar { background: var(--header); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
         #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; font-size: 1rem; }
-        .send-btn { background: #00a884; border: none; width: 48px; height: 48px; border-radius: 50%; color: white; cursor: pointer; }
+        .send-btn { background: #00a884; border: none; width: 48px; height: 48px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div id="admin-toolbar">
-    <span id="selected-count">0 Zimechaguliwa</span>
-    <div>
-        <i class="fas fa-trash-alt" style="cursor:pointer; margin-right: 20px; font-size: 1.2rem;" onclick="deleteSelected()"></i>
-        <i class="fas fa-times" style="cursor:pointer; font-size: 1.2rem;" onclick="clearSelection()"></i>
-    </div>
-</div>
-
 <div class="header">
     <div>
         <h4 style="margin:0;">EMR Community</h4>
-        <div class="online-status"><span id="active-count">0 Online</span></div>
+        <div class="online-status"><span class="online-dot"></span> <span id="active-count">0 Online</span></div>
     </div>
     <div id="total-members" style="font-size: 0.75rem; color: #8696a0;">0 Members</div>
 </div>
@@ -77,6 +73,10 @@
 <div id="chat-window"></div>
 
 <div class="bottom-area">
+    <div id="reply-preview">
+        <div id="reply-text" style="font-size: 0.82rem; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+        <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; color: white;"></i>
+    </div>
     <div id="typing-indicator">anaandika...</div>
     <div class="input-bar">
         <input type="text" id="msg-input" placeholder="Andika ujumbe..." autocomplete="off">
@@ -87,15 +87,13 @@
 <script>
     const _client = supabase.createClient('https://bnskxnaqjmsrtzglsdug.supabase.co', 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K');
     let me = null;
-    let selectedMsgs = [];
-    let isSelectionMode = false;
-
-    // Lugha chafu - IMEZUIWA 100%
-    const BAD_WORDS = ['kuma', 'malaya', 'msenge', 'tombwa', 'unaliwa', 'unakulwa', 'tapeli', 'pumbavu', 'fala'];
+    let typingTimeout;
+    let selectedReply = null;
 
     async function init() {
         const { data: { user } } = await _client.auth.getUser();
         if(!user) return;
+        
         const { data: profile } = await _client.from('profiles').select('*').eq('id', user.id).single();
         if(profile) {
             me = profile;
@@ -108,114 +106,108 @@
         const { data: msgs } = await _client.from('messages').select('*').order('id', { ascending: true }).limit(50);
         if(msgs) msgs.forEach(m => render(m));
 
-        // Real-time changes
-        _client.channel('emr-main')
+        const channel = _client.channel('emr-main', { config: { presence: { key: user.id } } });
+        channel
         .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, p => {
-            if(p.eventType === 'INSERT') render(p.new);
-            else if(p.eventType === 'UPDATE') {
-                const msgEl = document.querySelector(`#msg-${p.new.id} .text`);
-                if(msgEl && p.new.is_deleted) {
-                    msgEl.innerHTML = `<span class="deleted-info"><i class="fas fa-ban"></i> Ujumbe huu umefutwa na Admin ${p.new.deleted_by}</span>`;
-                }
+            if(p.eventType === 'INSERT') { render(p.new); document.getElementById('typing-indicator').style.visibility = 'hidden'; }
+            else if(p.eventType === 'DELETE') { const el = document.getElementById(`msg-${p.old.id}`); if(el) el.remove(); }
+        })
+        .on('broadcast', { event: 'typing' }, p => {
+            const el = document.getElementById('typing-indicator');
+            if (p.payload.user !== me.display_name) {
+                el.innerText = `${p.payload.user} anaandika...`;
+                el.style.visibility = 'visible';
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => { el.style.visibility = 'hidden'; }, 2000);
             }
         })
         .on('presence', { event: 'sync' }, () => {
-            document.getElementById('active-count').innerText = `${Object.keys(_client.channel('emr-main').presenceState()).length} Online`;
+            const online = Object.keys(channel.presenceState()).length;
+            document.getElementById('active-count').innerText = `${online} Online`;
         })
-        .subscribe();
+        .subscribe(async (s) => { if (s === 'SUBSCRIBED') await channel.track({ user: me.display_name }); });
+
+        document.getElementById('msg-input').oninput = () => {
+            channel.send({ type: 'broadcast', event: 'typing', payload: { user: me.display_name } });
+        };
     }
 
     function render(m) {
         const win = document.getElementById('chat-window');
         const isMe = m.sender_id === (me ? me.id : null);
+        
         const container = document.createElement('div');
         container.className = 'msg-container';
         container.id = `msg-${m.id}`;
 
-        // Long press logic for Admin Multi-Select
-        let pressTimer;
-        container.onmousedown = container.ontouchstart = () => {
-            if(me.is_admin === 1 && !m.is_deleted) pressTimer = setTimeout(() => toggleSelect(m.id), 600);
+        // Swipe to Reply Logic
+        let startX = 0;
+        container.ontouchstart = (e) => startX = e.touches[0].clientX;
+        container.ontouchmove = (e) => {
+            let diff = e.touches[0].clientX - startX;
+            if (diff > 0 && diff < 100) container.style.transform = `translateX(${diff}px)`;
         };
-        container.onmouseup = container.ontouchend = () => clearTimeout(pressTimer);
-        container.onclick = () => { if(isSelectionMode) toggleSelect(m.id); };
+        container.ontouchend = (e) => {
+            if (parseInt(container.style.transform.replace('translateX(', '')) > 50) setReply(m.sender_name, m.content);
+            container.style.transform = 'translateX(0px)';
+        };
+        // Desktop support (Double click to reply)
+        container.ondblclick = () => setReply(m.sender_name, m.content);
 
-        let content = m.is_deleted 
-            ? `<span class="deleted-info"><i class="fas fa-ban"></i> Ujumbe huu umefutwa na Admin ${m.deleted_by || ''}</span>` 
-            : m.content;
-            
-        let label = m.is_admin ? 'ADMIN' : (m.sender_role === 'merchant' ? 'MERCHANT' : 'MFANYAKAZI');
-        let color = m.is_admin ? 'var(--admin)' : (m.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)');
+        let label = 'MFANYAKAZI', color = 'var(--green)';
+        if(m.is_admin === 1) { label = 'ADMIN'; color = 'var(--admin)'; }
+        else if(m.sender_role === 'merchant') { label = 'MERCHANT'; color = 'var(--gold)'; }
+
+        let delBtn = (me && me.is_admin === 1) ? `<i class="fas fa-trash-alt del-btn" onclick="deleteMsg(${m.id})"></i>` : '';
+        let replyHtml = m.reply_to_name ? `<div class="reply-in-msg"><b>@${m.reply_to_name}</b><br>${m.reply_to_msg}</div>` : '';
 
         container.innerHTML = `
             <div class="msg ${isMe ? 'sent' : 'received'}">
+                ${replyHtml}
                 <div class="sender-row">
                     <span style="color:${color}">${isMe ? 'Wewe' : m.sender_name} <span class="badge" style="background:${color}">${label}</span></span>
+                    ${delBtn}
                 </div>
-                <div class="text">${content}</div>
-                <div class="msg-footer">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                <div class="text">${m.content}</div>
+                <div class="msg-footer">
+                    ${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                    ${isMe ? '<i class="fas fa-check-double tick-blue"></i>' : ''}
+                </div>
             </div>
         `;
         win.appendChild(container);
-        win.scrollTo(0, win.scrollHeight);
+        win.scrollTo({ top: win.scrollHeight, behavior: 'smooth' });
     }
 
-    function toggleSelect(id) {
-        if(!me || me.is_admin !== 1) return;
-        isSelectionMode = true;
-        document.getElementById('admin-toolbar').style.display = 'flex';
-        const el = document.getElementById(`msg-${id}`);
-        if(selectedMsgs.includes(id)) {
-            selectedMsgs = selectedMsgs.filter(i => i !== id);
-            el.classList.remove('selected-msg');
-        } else {
-            selectedMsgs.push(id);
-            el.classList.add('selected-msg');
-        }
-        document.getElementById('selected-count').innerText = `${selectedMsgs.length} Zimechaguliwa`;
-        if(selectedMsgs.length === 0) clearSelection();
+    function setReply(name, text) {
+        selectedReply = { name, text };
+        document.getElementById('reply-preview').style.display = 'flex';
+        document.getElementById('reply-text').innerHTML = `<b>@${name}</b>: ${text}`;
+        document.getElementById('msg-input').focus();
     }
 
-    function clearSelection() {
-        selectedMsgs.forEach(id => {
-            const el = document.getElementById(`msg-${id}`);
-            if(el) el.classList.remove('selected-msg');
-        });
-        selectedMsgs = [];
-        isSelectionMode = false;
-        document.getElementById('admin-toolbar').style.display = 'none';
-    }
-
-    async function deleteSelected() {
-        if(!confirm(`Admin ${me.display_name}, unafuta ujumbe ${selectedMsgs.length}?`)) return;
-        
-        for(let id of selectedMsgs) {
-            await _client.from('messages').update({ 
-                is_deleted: true, 
-                content: 'DELETED', 
-                deleted_by: me.display_name 
-            }).eq('id', id);
-        }
-        clearSelection();
+    function cancelReply() {
+        selectedReply = null;
+        document.getElementById('reply-preview').style.display = 'none';
     }
 
     async function send() {
         const input = document.getElementById('msg-input');
-        let val = input.value.trim();
-        if(!val) return;
-
-        // Filter ya Lugha
-        if(BAD_WORDS.some(word => val.toLowerCase().includes(word))) {
-            alert("🛑 Onyo: Usitumie lugha chafu kwenye group hili!");
-            input.value = '';
-            return;
-        }
-
-        await _client.from('messages').insert([{
+        if(!input.value.trim()) return;
+        const data = {
             sender_id: me.id, sender_name: me.display_name,
-            sender_role: me.role, is_admin: me.is_admin, content: val
-        }]);
+            sender_role: me.role || 'worker', is_admin: me.is_admin || 0,
+            content: input.value,
+            reply_to_name: selectedReply ? selectedReply.name : null,
+            reply_to_msg: selectedReply ? selectedReply.text : null
+        };
         input.value = '';
+        cancelReply();
+        await _client.from('messages').insert([data]);
+    }
+
+    async function deleteMsg(id) {
+        if(confirm("Futa ujumbe huu?")) await _client.from('messages').delete().eq('id', id);
     }
 
     document.getElementById('msg-input').onkeyup = (e) => { if(e.key === "Enter") send(); };
