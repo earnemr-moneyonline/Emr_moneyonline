@@ -88,11 +88,7 @@
         </div>
         <div class="method-item" onclick="showGuide('tigo')">
             <img src="tigo.png" alt="Tigo">
-            <p>Tigo Pesa</p>
-        </div>
-        <div class="method-item" onclick="showGuide('mixx')">
-            <img src="tigo.png" alt="Mixx">
-            <p>Mixx by Yas</p>
+            <p>Mixx by yas</p>
         </div>
         <div class="method-item" onclick="showGuide('halo')">
             <img src="halopesa.png" alt="HaloPesa">
@@ -144,11 +140,7 @@
             },
             tigo: { 
                 title: "LIPA KWA TIGO PESA", 
-                steps: ["Piga *150*01#", "Chagua 5 (Lipa kwa Simu)", "Chagua 1 (Kwenda Tigo Pesa)", "Namba ya Simu: 0652615822", "Ingiza Kiasi na Siri."] 
-            },
-            mixx: { 
-                title: "LIPA KWA MIXX BY YAS (ZANTEL)", 
-                steps: ["Piga *150*02#", "Chagua 5 (Lipa kwa Mixx by Yas)", "Ingiza namba ya Kampuni: 0740430220", "Ingiza Kiasi na Siri."] 
+                steps: ["Piga *150*01#", "Chagua 5 (Lipa kwa Simu)", "Chagua 1 (Kwenda mixx by yas)", "Namba ya Simu: 06xxxxxxx", "Ingiza Kiasi na namba ya  Siri."] 
             },
             halo: { 
                 title: "LIPA KWA HALOPESA", 
@@ -183,7 +175,7 @@
             const amt = document.getElementById('amount').value;
             const tid = document.getElementById('trans_id').value;
 
-            if (amt < 5000) { alert("Kiwango cha chini ni TZS 5,000"); return; }
+            if (amt < 5000) { alert("Kiwango cha chini ni TZS 2,500"); return; }
             if (!tid) { alert("Weka Transaction ID ya muamala wako"); return; }
 
             const { data: { user } } = await _supabase.auth.getUser();
