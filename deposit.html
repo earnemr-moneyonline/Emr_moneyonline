@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weka Pesa | EMR Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: white; padding: 20px; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .back-btn { color: white; text-decoration: none; font-size: 1.2rem; }
+
+        .payment-methods { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 10px; }
+        .method-card { 
+            min-width: 100px; padding: 15px; background: var(--card); border-radius: 12px; 
+            text-align: center; border: 1px solid transparent; cursor: pointer; transition: 0.3s;
+        }
+        .method-card.active { border-color: var(--gold); background: rgba(255, 201, 71, 0.1); }
+        .method-card img { width: 40px; height: 40px; border-radius: 8px; margin-bottom: 5px; }
+
+        .instructions { 
+            background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; 
+            border-left: 4px solid var(--gold); margin-bottom: 25px;
+        }
+        .instructions h4 { color: var(--gold); margin-bottom: 10px; }
+        .pay-number { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; margin: 10px 0; display: block; }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.8rem; opacity: 0.7; margin-bottom: 8px; }
+        input { 
+            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #334155; 
+            background: var(--card); color: white; outline: none; font-size: 1rem;
+        }
+
+        .btn-confirm { 
+            width: 100%; padding: 18px; background: var(--gold); border: none; 
+            border-radius: 15px; font-weight: 800; color: #000; cursor: pointer; font-size: 1rem;
+        }
+        
+        .note { font-size: 0.7rem; opacity: 0.5; text-align: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="merchant_dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h3 style="font-size: 1.1rem;">Ongeza Salio la Matangazo</h3>
+    </div>
+
+    <p style="font-size: 0.85rem; margin-bottom: 15px;">1. Chagua Mtandao:</p>
+    <div class="payment-methods">
+        <div class="method-card active" onclick="selectMethod('MPESA', '0740430220', 'EMR MONEY GROUP')">
+            <img src="https://upload.wikimedia.org/wikipedia/en/d/df/M-pesa_logo.png" alt="Mpesa">
+            <p style="font-size: 0.7rem;">M-Pesa</p>
+        </div>
+        <div class="method-card" onclick="selectMethod('TIGOPESA', '0650000000', 'EMR MONEY GROUP')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Tigo_logo.png" alt="Tigo">
+            <p style="font-size: 0.7rem;">TigoPesa</p>
+        </div>
+        <div class="method-card" onclick="selectMethod('AIRTEL', '0680000000', 'EMR MONEY GROUP')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Airtel_logo.png" alt="Airtel">
+            <p style="font-size: 0.7rem;">AirtelMoney</p>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h4>Maelekezo ya Malipo:</h4>
+        <p style="font-size: 0.8rem;">Tuma kiasi unachotaka kuongeza kwenda namba hii:</p>
+        <span class="pay-number" id="target-number">0740430220</span>
+        <p style="font-size: 0.8rem;">Jina: <b id="target-name">EMR MONEY GROUP</b></p>
+    </div>
+
+    <div class="form-group">
+        <label>Kiasi ulichotuma (TZS)</label>
+        <input type="number" id="amount" placeholder="Mfano: 10000">
+    </div>
+
+    <div class="form-group">
+        <label>Transaction ID (Kumbukumbu ya Muamala)</label>
+        <input type="text" id="transaction-id" placeholder="Mfano: SJK829LMS">
+    </div>
+
+    <button class="btn-confirm" onclick="submitDeposit()">THIBITISHA MALIPO</button>
+
+    <p class="note">Salio litaongezeka mara baada ya uhakiki kukamilika (Ndani ya dkk 5-15).</p>
+
+    <script>
+        // Supabase Link (Tumia zako ulizopewa)
+        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function selectMethod(name, number, owner) {
+            document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById('target-number').innerText = number;
+            document.getElementById('target-name').innerText = owner;
+        }
+
+        async function submitDeposit() {
+            const amount = document.getElementById('amount').value;
+            const transId = document.getElementById('transaction-id').value;
+            
+            if(!amount || !transId) {
+                alert("Tafadhali jaza kiasi na Transaction ID!");
+                return;
+            }
+
+            const { data: { user } } = await _supabase.auth.getUser();
+
+            // Tuma taarifa kwenye table ya 'deposits' ili Admin aone
+            const { error } = await _supabase.from('deposits').insert([
+                { 
+                    user_id: user.id, 
+                    amount: parseInt(amount), 
+                    transaction_id: transId,
+                    status: 'pending'
+                }
+            ]);
+
+            if (!error) {
+                alert("Ombi lako limepokelewa! Tunahakiki muamala wako.");
+                window.location.href = "merchant_dashboard.html";
+            } else {
+                alert("Kuna tatizo! Jaribu tena baadae.");
+                console.log(error);
+            }
+        }
+    </script>
+</body>
+</html>
