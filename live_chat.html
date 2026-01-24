@@ -3,59 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMR Live | Admin & Chat</title>
+    <title>EMR Community | Pro Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
             --bg: #0b141a; --header: #202c33; --me: #005c4b; --others: #202c33; 
-            --gold: #ffc947; --green: #25d366; --admin: #ef4444; 
+            --gold: #ffc947; --green: #25d366; --admin: #ef4444; --light-text: #e9edef;
         }
-        body, html { height: 100%; margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e9edef; overflow: hidden; }
         
-        .chat-container { display: flex; flex-direction: column; height: 100vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { height: 100%; font-family: 'Segoe UI', Helvetica, sans-serif; background: var(--bg); color: var(--light-text); overflow: hidden; }
         
-        /* Header */
-        .header { background: var(--header); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
-        .online-info h4 { margin: 0; font-size: 1rem; color: #fff; }
-        .online-status { font-size: 0.75rem; color: var(--green); display: flex; align-items: center; gap: 5px; }
+        /* Pulse Animation kwa Active Status */
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(37, 211, 102, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
 
-        /* Chat Window - Imeboreshwa iwe Scrollable */
+        .header { 
+            background: var(--header); padding: 12px 16px; display: flex; 
+            justify-content: space-between; align-items: center; z-index: 100; 
+            position: fixed; top: 0; width: 100%; height: 65px; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .online-dot { 
+            width: 8px; height: 8px; background: var(--green); border-radius: 50%; 
+            display: inline-block; margin-right: 5px; animation: pulse-green 2s infinite;
+        }
+        .online-status { font-size: 0.75rem; color: var(--green); font-weight: 500; }
+
         #chat-window { 
-            flex: 1; 
-            overflow-y: scroll; /* Inaruhusu ku-scroll */
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
+            flex: 1; height: 100vh; overflow-y: auto; 
+            padding: 80px 15px 150px 15px;
+            display: flex; flex-direction: column; gap: 6px; 
             background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); 
-            background-blend-mode: overlay; 
-            background-color: var(--bg);
-            -webkit-overflow-scrolling: touch; /* Scroll laini kwa iPhone */
+            background-blend-mode: overlay; background-color: var(--bg);
+            scroll-behavior: smooth;
         }
+
+        /* Message Bubbles - WhatsApp Style */
+        .msg { max-width: 85%; padding: 6px 10px; border-radius: 8px; font-size: 0.9rem; position: relative; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Message Bubbles */
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 0.92rem; position: relative; cursor: pointer; }
-        .sent { align-self: flex-end; background: var(--me); border-bottom-right-radius: 2px; }
-        .received { align-self: flex-start; background: var(--others); border-bottom-left-radius: 2px; }
+        .sent { align-self: flex-end; background: var(--me); border-top-right-radius: 0; }
+        .received { align-self: flex-start; background: var(--others); border-top-left-radius: 0; }
         
-        /* Sender Info & Badges */
-        .sender { font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; }
-        .badge { font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; color: #000; text-transform: uppercase; font-weight: 900; }
-        .badge-merchant { background: var(--gold); }
-        .badge-worker { background: var(--green); }
+        .sender-row { font-size: 0.72rem; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+        .badge { font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; color: #000; font-weight: 900; }
         .badge-admin { background: var(--admin); color: white; }
+        .badge-merch { background: var(--gold); }
+        .badge-work { background: var(--green); }
 
-        .reply-card { background: rgba(0,0,0,0.3); border-left: 3px solid var(--gold); padding: 6px; border-radius: 4px; margin-bottom: 5px; font-size: 0.8rem; }
+        .reply-box { background: rgba(0,0,0,0.2); border-left: 3px solid var(--gold); padding: 5px; border-radius: 4px; margin-bottom: 4px; font-size: 0.8rem; opacity: 0.8; }
+        
+        .msg-footer { font-size: 0.62rem; display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 2px; opacity: 0.7; }
+        .tick-blue { color: #53bdeb; }
 
-        .msg-footer { font-size: 0.65rem; float: right; margin-top: 4px; opacity: 0.6; display: flex; align-items: center; gap: 4px; }
-        .tick { color: #53bdeb; }
+        /* Typing Indicator */
+        #typing-indicator { font-size: 0.75rem; color: var(--green); font-style: italic; margin-left: 16px; position: fixed; bottom: 85px; display: none; z-index: 105; }
 
-        /* Footer Input Area */
-        #reply-preview { background: #1e2a30; padding: 10px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; }
-        .footer { background: var(--header); padding: 10px 15px; display: flex; align-items: center; gap: 10px; z-index: 110; }
+        /* Input Plate - Inakaa muda wote (Sticky) */
+        .bottom-area { position: fixed; bottom: 0; width: 100%; z-index: 120; background: var(--bg); }
+        .input-bar { background: var(--header); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
         #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; font-size: 1rem; }
-        .send-btn { background: #00a884; border: none; width: 48px; height: 48px; border-radius: 50%; color: white; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .send-btn { background: #00a884; border: none; width: 46px; height: 46px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .send-btn:active { transform: scale(0.9); }
+
+        #reply-preview { background: #1e2a30; padding: 10px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -63,23 +78,25 @@
 <div class="chat-container">
     <div class="header">
         <div class="online-info">
-            <h4>EMR Community</h4>
-            <span id="active-count">● 0 Online</span>
+            <h4>EMR Global Chat</h4>
+            <div class="online-status"><span class="online-dot"></span> <span id="active-count">0 Online</span></div>
         </div>
-        <div id="total-members" style="font-size: 0.7rem; opacity: 0.5;">Members: 0</div>
+        <div id="total-members" style="font-size: 0.7rem; opacity: 0.5;">0 Members</div>
     </div>
 
-    <div id="chat-window">
+    <div id="chat-window"></div>
+
+    <div id="typing-indicator">Mtu anaandika...</div>
+
+    <div class="bottom-area">
+        <div id="reply-preview">
+            <div id="reply-text" style="font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></div>
+            <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; padding: 5px;"></i>
         </div>
-
-    <div id="reply-preview">
-        <div id="reply-text" style="font-size: 0.8rem; opacity: 0.8;"></div>
-        <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer"></i>
-    </div>
-
-    <div class="footer">
-        <input type="text" id="msg-input" placeholder="Andika kitu mzee baba..." autocomplete="off">
-        <button class="send-btn" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+        <div class="input-bar">
+            <input type="text" id="msg-input" placeholder="Andika ujumbe wa kinyama..." autocomplete="off">
+            <button class="send-btn" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+        </div>
     </div>
 </div>
 
@@ -87,38 +104,51 @@
     const _client = supabase.createClient('https://bnskxnaqjmsrtzglsdug.supabase.co', 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K');
     let me = null;
     let selectedReply = null;
+    let typingTimeout;
 
     async function init() {
         const { data: { user } } = await _client.auth.getUser();
         if(!user) return;
         
-        // Vuta profile ikiwemo kama ni Admin (is_admin field)
         const { data: profile } = await _client.from('profiles').select('*').eq('id', user.id).single();
         me = profile;
 
-        // Vuta idadi ya Members
         const { count } = await _client.from('profiles').select('*', { count: 'exact', head: true });
-        document.getElementById('total-members').innerText = "Members: " + count;
+        document.getElementById('total-members').innerText = count + " Members";
 
-        // Meseji za nyuma
         const { data: msgs } = await _client.from('messages').select('*').order('id', { ascending: true }).limit(100);
         if(msgs) msgs.forEach(m => render(m));
 
-        // REALTIME ENGINE
-        const channel = _client.channel('main_room', { config: { presence: { key: user.id } } });
+        // REALTIME
+        const channel = _client.channel('emr-main', { config: { presence: { key: user.id } } });
         
         channel
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, p => {
             render(p.new);
-            if (p.new.sender_id !== me.id) playDing();
+            if (p.new.sender_id !== me.id) {
+                new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3').play().catch(()=>{});
+            }
+        })
+        .on('broadcast', { event: 'typing' }, payload => {
+            const el = document.getElementById('typing-indicator');
+            if (payload.payload.user !== me.username) {
+                el.innerText = `${payload.payload.user} anaandika...`;
+                el.style.display = 'block';
+                setTimeout(() => el.style.display = 'none', 3000);
+            }
         })
         .on('presence', { event: 'sync' }, () => {
             const online = Object.keys(channel.presenceState()).length;
-            document.getElementById('active-count').innerText = `● ${online} Online sasa hivi`;
+            document.getElementById('active-count').innerText = `${online} Online`;
         })
         .subscribe(async (s) => {
-            if (s === 'SUBSCRIBED') await channel.track({ online_at: new Date() });
+            if (s === 'SUBSCRIBED') await channel.track({ user: me.username });
         });
+
+        // Typing Listener
+        document.getElementById('msg-input').oninput = () => {
+            channel.send({ type: 'broadcast', event: 'typing', payload: { user: me.username || me.full_name } });
+        };
     }
 
     function render(m) {
@@ -128,42 +158,32 @@
         div.className = `msg ${isMe ? 'sent' : 'received'}`;
         div.onclick = () => setReply(m.sender_name, m.content);
 
-        // Pata Rangi ya Role
-        let roleClass = 'badge-worker';
-        let roleName = m.sender_role;
-        
-        // Kama kwenye database 'is_admin' ni 1, mpe lebo ya Admin
-        if (m.is_admin === 1 || m.sender_role === 'admin') {
-            roleClass = 'badge-admin';
-            roleName = 'ADMIN';
-        } else if (m.sender_role === 'merchant') {
-            roleClass = 'badge-merchant';
-        }
+        let badge = 'badge-work'; let role = m.sender_role;
+        if (m.is_admin === 1) { badge = 'badge-admin'; role = 'ADMIN'; }
+        else if (m.sender_role === 'merchant') { badge = 'badge-merch'; }
 
-        let replyHtml = m.reply_to_name ? `<div class="reply-card"><b>@${m.reply_to_name}</b><br>${m.reply_to_msg}</div>` : '';
+        let reply = m.reply_to_name ? `<div class="reply-box"><b>@${m.reply_to_name}</b><br>${m.reply_to_msg}</div>` : '';
 
         div.innerHTML = `
-            ${replyHtml}
-            <div class="sender">
-                <span style="color: ${roleClass === 'badge-admin' ? 'var(--admin)' : (m.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)')}">
-                    ${isMe ? 'Wewe' : m.sender_name}
-                </span>
-                <span class="badge ${roleClass}">${roleName}</span>
+            ${reply}
+            <div class="sender-row">
+                <span style="color:${m.is_admin === 1 ? 'var(--admin)' : (m.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)')}">${isMe ? 'Wewe' : m.sender_name}</span>
+                <span class="badge ${badge}">${role}</span>
             </div>
             ${m.content}
             <div class="msg-footer">
                 ${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-                ${isMe ? '<i class="fas fa-check-double tick"></i>' : ''}
+                ${isMe ? '<i class="fas fa-check-double tick-blue"></i>' : ''}
             </div>
         `;
         win.appendChild(div);
-        win.scrollTop = win.scrollHeight; // Shusha chati chini meseji mpya ikija
+        win.scrollTop = win.scrollHeight;
     }
 
     function setReply(name, text) {
         selectedReply = { name, text };
         document.getElementById('reply-preview').style.display = 'flex';
-        document.getElementById('reply-text').innerHTML = `<b style="color:var(--gold)">@${name}</b>: ${text.substring(0, 40)}...`;
+        document.getElementById('reply-text').innerHTML = `<b style="color:var(--gold)">Kujibu @${name}</b>: ${text}`;
         document.getElementById('msg-input').focus();
     }
 
@@ -178,23 +198,15 @@
         if(!val) return;
 
         const data = {
-            sender_id: me.id,
-            sender_name: me.username || me.full_name,
-            sender_role: me.role || 'worker',
-            is_admin: me.is_admin || 0, // Inatuma status ya admin
-            content: val,
-            reply_to_name: selectedReply ? selectedReply.name : null,
+            sender_id: me.id, sender_name: me.username || me.full_name,
+            sender_role: me.role || 'worker', is_admin: me.is_admin || 0,
+            content: val, reply_to_name: selectedReply ? selectedReply.name : null,
             reply_to_msg: selectedReply ? selectedReply.text : null
         };
 
         input.value = '';
         cancelReply();
         await _client.from('messages').insert([data]);
-    }
-
-    function playDing() {
-        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
-        audio.play().catch(() => {});
     }
 
     document.getElementById('msg-input').onkeyup = (e) => { if(e.key === "Enter") send(); };
