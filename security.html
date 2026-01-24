@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usalama wa Pesa | EMR Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #020617; --safe: #22c55e; --gold: #ffc947; --card: #111827; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; padding: 20px; }
+
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .safe-icon { color: var(--safe); font-size: 2rem; }
+
+        /* Escrow Shield Card */
+        .shield-card { 
+            background: linear-gradient(135deg, #064e3b 0%, #020617 100%);
+            border-radius: 25px; padding: 25px; border: 1px solid var(--safe);
+            position: relative; overflow: hidden; margin-bottom: 25px;
+        }
+        .shield-card::after {
+            content: '\f3ed'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.1;
+        }
+
+        .escrow-amt { font-size: 2rem; font-weight: 900; margin: 10px 0; }
+        .badge { background: var(--safe); color: black; padding: 4px 10px; border-radius: 5px; font-size: 0.6rem; font-weight: 800; }
+
+        /* Security Logs */
+        .log-section { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #1f2937; }
+        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #1f2937; }
+        .log-item:last-child { border: none; }
+        .log-info h4 { font-size: 0.85rem; margin-bottom: 4px; }
+        .log-info p { font-size: 0.7rem; opacity: 0.5; }
+        .log-status { font-size: 0.8rem; font-weight: 700; color: var(--safe); }
+
+        .btn-back { display: block; text-align: center; margin-top: 30px; color: var(--gold); text-decoration: none; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <i class="fas fa-shield-halved safe-icon"></i>
+        <div>
+            <h3>Kituo cha Usalama</h3>
+            <p style="font-size: 0.7rem; opacity: 0.6;">Ulinzi wa Pesa na Data (End-to-End)</p>
+        </div>
+    </div>
+
+    <div class="shield-card">
+        <span class="badge">ESCROW ACTIVE</span>
+        <p style="font-size: 0.75rem; margin-top: 15px; opacity: 0.8;">Pesa Inayolindwa (In-Transit):</p>
+        <h1 class="escrow-amt" id="escrow-val">TZS 0</h1>
+        <p style="font-size: 0.65rem; opacity: 0.7;"><i class="fas fa-info-circle"></i> Hii ni pesa iliyohifadhiwa kwa ajili ya kulipa kazi ambazo bado huzijathibitisha.</p>
+    </div>
+
+    <h4 style="margin-bottom: 15px; font-size: 0.9rem;">LOGS ZA USALAMA</h4>
+    <div class="log-section" id="logs-container">
+        <p style="text-align: center; opacity: 0.3; padding: 20px;">Hakuna kumbukumbu za hivi karibuni...</p>
+    </div>
+
+    <a href="wallet.html" class="btn-back"><i class="fas fa-arrow-left"></i> Rudi Kwenye Wallet</a>
+
+    <script>
+        const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function loadSecurityData() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return;
+
+            // 1. Vuta Salio la Escrow
+            const { data: profile } = await _supabase.from('profiles').select('escrow_balance').eq('id', user.id).single();
+            if (profile) {
+                document.getElementById('escrow-val').innerText = "TZS " + (profile.escrow_balance || 0).toLocaleString();
+            }
+
+            // 2. Vuta Logs (Hapa tunatumia submissions za sasa kama mfano wa logs)
+            const { data: logs } = await _supabase
+                .from('submissions')
+                .select('*, jobs(title)')
+                .limit(5)
+                .order('created_at', { ascending: false });
+
+            const container = document.getElementById('logs-container');
+            if (logs && logs.length > 0) {
+                container.innerHTML = logs.map(log => `
+                    <div class="log-item">
+                        <div class="log-info">
+                            <h4>${log.jobs.title}</h4>
+                            <p>${new Date(log.created_at).toLocaleString('sw-TZ')}</p>
+                        </div>
+                        <div class="log-status">
+                            ${log.status === 'pending' ? 'SECURED' : 'RELEASED'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        loadSecurityData();
+    </script>
+</body>
+</html>
