@@ -146,29 +146,34 @@
                 .single();
 
             if (profile) {
-                const userTag = profile.username || (profile.full_name ? profile.full_name.split(' ')[0] : "Bosi");
-                document.getElementById('display-username').innerText = "@" + userTag.toLowerCase();
+                // HAPA NDIPO TUNAPOKATA JINA LA KWANZA TU
+                let firstName = "";
+                if (profile.full_name) {
+                    firstName = profile.full_name.trim().split(' ')[0];
+                } else if (profile.username) {
+                    firstName = profile.username;
+                } else {
+                    firstName = "Boss";
+                }
+                
+                document.getElementById('display-username').innerText = "@" + firstName.toLowerCase();
+                
                 const bal = profile.balance || 0;
                 document.getElementById('real-balance').innerText = "TZS " + bal.toLocaleString();
             }
 
-            const { count: fCount } = await _supabase
-                .from('follows')
-                .select('*', { count: 'exact' })
-                .eq('merchant_id', user.id);
+            // ... (Kodi ya hesabu ya Followers na Jobs imebaki vilevile)
+            const { count: fCount } = await _supabase.from('follows').select('*', { count: 'exact' }).eq('merchant_id', user.id);
             document.getElementById('count-followers').innerText = fCount || 0;
 
-            const { count: jCount } = await _supabase
-                .from('submissions')
-                .select('*, jobs!inner(merchant_id)', { count: 'exact' })
-                .eq('jobs.merchant_id', user.id)
-                .eq('status', 'approved');
+            const { count: jCount } = await _supabase.from('submissions').select('*, jobs!inner(merchant_id)', { count: 'exact' }).eq('jobs.merchant_id', user.id).eq('status', 'approved');
             document.getElementById('count-jobs').innerText = jCount || 0;
 
             loadMerchantGraph(user.id);
         }
 
         async function loadMerchantGraph(mId) {
+            // ... (Kodi ya Graph imebaki vilevile bila kuguswa)
             const { data, error } = await _supabase.rpc('get_merchant_stats', { m_id: mId });
             if (error || !data) return;
 
