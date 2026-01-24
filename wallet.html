@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; --slate: #94a3b8; }
+        :root { --bg: #020617; --gold: #ffc947; --card: #1e293b; --slate: #94a3b8; --whatsapp: #25d366; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; padding: 20px; min-height: 100vh; }
 
@@ -40,6 +40,28 @@
         }
         .topup-btn:active { transform: scale(0.98); }
 
+        /* WhatsApp Button Pro */
+        .whatsapp-banner-link { text-decoration: none; display: block; margin-bottom: 25px; }
+        .whatsapp-banner {
+            background: var(--whatsapp);
+            padding: 18px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.25);
+            transition: 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .whatsapp-banner:active { transform: scale(0.96); opacity: 0.9; }
+        .wa-icon-circle {
+            background: rgba(255,255,255,0.2);
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: white;
+        }
+
         /* Stats Grid */
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
         .info-item { background: var(--card); padding: 20px; border-radius: 18px; border: 1px solid #1e293b; }
@@ -59,7 +81,7 @@
 
     <div class="merchant-header">
         <div class="merchant-badge"><i class="fas fa-crown"></i> OFFICIAL MERCHANT</div>
-        <h2 class="username-display" id="display-username">@mjasiriamali</h2>
+        <h2 class="username-display" id="display-username">@loading...</h2>
     </div>
 
     <div class="wallet-card">
@@ -69,6 +91,19 @@
             <i class="fas fa-plus-circle"></i> WEKA PESA
         </button>
     </div>
+
+    <a href="https://chat.whatsapp.com/EVlnCkyww3xDLKuS0797E0" target="_blank" class="whatsapp-banner-link">
+        <div class="whatsapp-banner">
+            <div class="wa-icon-circle">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <div style="text-align: left;">
+                <b style="color: #fff; font-size: 0.95rem; display: block; letter-spacing: 0.5px;">JOIN MERCHANT GROUP</b>
+                <span style="color: rgba(255,255,255,0.9); font-size: 0.75rem;">Bofya hapa kupata maelekezo zaidi</span>
+            </div>
+            <i class="fas fa-chevron-right" style="margin-left: auto; color: rgba(255,255,255,0.5);"></i>
+        </div>
+    </a>
 
     <div class="info-grid">
         <div class="info-item">
@@ -96,44 +131,33 @@
     </div>
 
     <script>
-        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function initMerchantWallet() {
-            // 1. Get Current User
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) {
-                console.error("User not logged in");
-                return;
-            }
+            if (!user) return;
 
-            // 2. Fetch Profile (Username & Balance)
-            const { data: profile, error } = await _supabase
+            const { data: profile } = await _supabase
                 .from('profiles')
                 .select('username, balance, full_name')
                 .eq('id', user.id)
                 .single();
 
             if (profile) {
-                // Update Username
                 const userTag = profile.username || (profile.full_name ? profile.full_name.split(' ')[0] : "Bosi");
                 document.getElementById('display-username').innerText = "@" + userTag.toLowerCase();
-                
-                // Update Balance (Real Time)
                 const bal = profile.balance || 0;
                 document.getElementById('real-balance').innerText = "TZS " + bal.toLocaleString();
             }
 
-            // 3. Fetch Real Followers Count
             const { count: fCount } = await _supabase
                 .from('follows')
                 .select('*', { count: 'exact' })
                 .eq('merchant_id', user.id);
             document.getElementById('count-followers').innerText = fCount || 0;
 
-            // 4. Fetch Approved Jobs Count
             const { count: jCount } = await _supabase
                 .from('submissions')
                 .select('*, jobs!inner(merchant_id)', { count: 'exact' })
@@ -141,14 +165,11 @@
                 .eq('status', 'approved');
             document.getElementById('count-jobs').innerText = jCount || 0;
 
-            // 5. Load the Reality Graph
             loadMerchantGraph(user.id);
         }
 
         async function loadMerchantGraph(mId) {
-            // Hii inapiga simu kwenye SQL Function (get_merchant_stats)
             const { data, error } = await _supabase.rpc('get_merchant_stats', { m_id: mId });
-            
             if (error || !data) return;
 
             const ctx = document.getElementById('merchantChart').getContext('2d');
@@ -176,7 +197,6 @@
             });
         }
 
-        // Launch Engine
         initMerchantWallet();
     </script>
 </body>
