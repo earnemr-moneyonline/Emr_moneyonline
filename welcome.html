@@ -17,7 +17,6 @@
             align-items: center;
             color: #ffffff;
             overflow: hidden;
-            /* Background Nyeusi mpauko inayochanganyika na nyeupe nzuri */
             background: radial-gradient(circle, #2c3e50, #000000, #1a1a1a);
             background-size: 200% 200%;
             animation: moveBG 10s ease infinite;
@@ -72,7 +71,6 @@
             transition: width 0.3s linear;
         }
 
-        /* Role Selection Styles */
         .role-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .role-card {
             background: rgba(255,255,255,0.08);
@@ -127,16 +125,29 @@
         ];
 
         async function init() {
+            // 1. Pata user aliyelog-in
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
             
-            // Kama ana role tayari, mpeleke dashboard
-            if(user.user_metadata.role) {
+            // 2. Vuta jina lake kutoka kwenye table ya profiles
+            const { data: profile, error: pError } = await _supabase
+                .from('profiles')
+                .select('full_name, status')
+                .eq('id', user.id)
+                .single();
+
+            if (pError || !profile) {
+                userName = "Mtumiaji"; // Fallback kama jina halipo kabisa
+            } else {
+                userName = profile.full_name;
+            }
+
+            // 3. Kama ana role tayari kwenye metadata, mpeleke dashboard direct
+            if(user.user_metadata && user.user_metadata.role) {
                 redirectUser(user.user_metadata.role);
                 return;
             }
 
-            userName = user.user_metadata.full_name;
             document.getElementById('p-bar').style.display = "block";
             showQuestion();
         }
@@ -154,7 +165,8 @@
                 `;
 
                 currentIdx++;
-                setTimeout(showQuestion, 30500); // Inabadilika kila baada ya sekunde 3.5
+                // Nimeiweka sekunde 3.5 kama kodi yako ya awali
+                setTimeout(showQuestion, 3500); 
             } else {
                 showRoleSelection();
             }
@@ -182,14 +194,19 @@
         }
 
         async function setRole(r) {
-            const status = document.getElementById('content-area');
-            status.innerHTML = `<p>Tunaandaa Dashboard yako ya ${r === 'merchant' ? 'Ufanyabiashara' : 'Ufanyakazi'}...</p>`;
+            const statusDiv = document.getElementById('content-area');
+            statusDiv.innerHTML = `<p>Tunaandaa Dashboard yako ya ${r === 'merchant' ? 'Ufanyabiashara' : 'Ufanyakazi'}...</p>`;
             
+            // Tunahifadhi role kwenye metadata ili asirudi tena hapa
             const { error } = await _supabase.auth.updateUser({
                 data: { role: r }
             });
 
-            if (!error) { redirectUser(r); }
+            if (!error) { 
+                redirectUser(r); 
+            } else {
+                alert("Hitilafu kuhifadhi role: " + error.message);
+            }
         }
 
         function redirectUser(role) {
