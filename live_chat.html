@@ -3,54 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Chat | EMR Pro</title>
+    <title>EMR Fast Chat | Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #0b141a; --chat-bg: #0b141a; --incoming: #202c33; --merchant: #ffc947; --worker: #22c55e; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { --bg: #0b141a; --header: #202c33; --my-msg: #005c4b; --other-msg: #202c33; --gold: #ffc947; --green: #25d366; --text: #e9edef; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Helvetica, sans-serif; }
         
-        body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; }
+        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Header ya Kijanja */
-        .chat-header { padding: 15px; background: #202c33; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #313d45; }
-        .active-info h3 { font-size: 1rem; }
-        .active-info p { font-size: 0.7rem; color: #00a884; }
-        .total-members { background: #313d45; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; }
+        /* Header */
+        .chat-header { background: var(--header); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .user-info h4 { font-size: 1rem; color: #fff; }
+        .online-status { font-size: 0.75rem; color: var(--green); display: flex; align-items: center; gap: 5px; }
+        .online-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; display: inline-block; }
 
-        /* Chat Area */
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; }
+        /* Chat Box */
+        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: #0b141a; background-blend-mode: overlay; scroll-behavior: smooth; }
 
-        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 10px; position: relative; font-size: 0.9rem; margin-bottom: 5px; background: var(--incoming); align-self: flex-start; }
-        .msg-bubble.me { align-self: flex-end; background: #005c4b; }
+        .msg-container { display: flex; flex-direction: column; max-width: 85%; position: relative; padding: 6px 10px; border-radius: 8px; font-size: 0.92rem; cursor: pointer; transition: 0.2s; }
+        .msg-container:active { background: rgba(255,255,255,0.1); }
+        
+        .me { align-self: flex-end; background: var(--my-msg); border-bottom-right-radius: 2px; }
+        .others { align-self: flex-start; background: var(--other-msg); border-bottom-left-radius: 2px; }
 
-        .sender-info { font-size: 0.65rem; font-weight: bold; margin-bottom: 3px; display: flex; gap: 5px; }
-        .role-badge { padding: 1px 5px; border-radius: 3px; text-transform: uppercase; font-size: 0.55rem; color: #000; }
-        .role-merchant { background: var(--merchant); }
-        .role-worker { background: var(--worker); }
+        .sender-name { font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; display: flex; justify-content: space-between; }
+        .role-badge { font-size: 0.6rem; padding: 1px 5px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; color: #000; font-weight: 800; }
+        
+        /* Reply Box inside message */
+        .reply-quoted { background: rgba(0,0,0,0.15); border-left: 4px solid var(--gold); padding: 5px 8px; border-radius: 4px; margin-bottom: 5px; font-size: 0.82rem; color: #ced0d1; }
 
-        /* Input Area */
-        .input-area { padding: 10px; background: #202c33; display: flex; gap: 10px; align-items: center; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #2a3942; color: white; outline: none; }
-        button { background: #00a884; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; }
+        .msg-footer { display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 0.65rem; margin-top: 2px; opacity: 0.7; }
+        .tick { color: #53bdeb; }
+
+        /* Reply Preview above Input */
+        #reply-preview-bar { background: #1e2a30; padding: 8px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; border-top: 1px solid #313d45; }
+
+        /* Input Bar */
+        .input-bar { background: var(--header); padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
+        #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 15px; border-radius: 25px; color: #fff; outline: none; font-size: 0.95rem; }
+        .btn-send { background: #00a884; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
     <div class="chat-header">
-        <div class="active-info">
-            <h3>EMR Global Chat</h3>
-            <p id="active-count"><i class="fas fa-circle"></i> 0 Active Sasa hivi</p>
+        <div class="user-info">
+            <h4 id="total-members">EMR Members: 0</h4>
+            <div class="online-status">
+                <span class="online-dot"></span>
+                <span id="active-count">1 Active Sasa hivi</span>
+            </div>
         </div>
-        <div class="total-members" id="total-joined">Members: 0</div>
+        <i class="fas fa-search" style="opacity: 0.6;"></i>
     </div>
 
     <div id="chat-box">
         </div>
 
-    <div class="input-area">
-        <input type="text" id="msg-input" placeholder="Andika ujumbe...">
-        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    <div id="reply-preview-bar">
+        <div id="reply-info" style="font-size: 0.85rem;"></div>
+        <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; padding: 5px;"></i>
+    </div>
+
+    <div class="input-bar">
+        <input type="text" id="msg-input" placeholder="Andika ujumbe..." autocomplete="off">
+        <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
     </div>
 
     <script>
@@ -58,76 +76,116 @@
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let myProfile = {};
+        let myProfile = null;
+        let replyData = null;
 
-        async function initChat() {
+        async function start() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) return alert("Login kwanza!");
+            if(!user) return;
 
-            // 1. Vuta Profile yangu
             const { data: profile } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
             myProfile = profile;
 
-            // 2. Vuta idadi ya Members wote
-            const { count: total } = await _supabase.from('profiles').select('*', { count: 'exact', head: true });
-            document.getElementById('total-joined').innerText = "Members: " + total;
+            // Vuta Members
+            const { count } = await _supabase.from('profiles').select('*', { count: 'exact', head: true });
+            document.getElementById('total-members').innerText = "EMR Members: " + count;
 
-            // 3. Vuta Ujumbe wa zamani (Last 50)
             loadMessages();
+            initRealtime(user.id);
+        }
 
-            // 4. Sikiliza Real-time (Ujumbe mpya ukiingia)
-            _supabase.channel('public:messages')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                appendMessage(payload.new);
-            })
-            .subscribe();
-            
-            // 5. Fake Active Count (Kwa sasa, inaweza kuwa dynamic baadaye)
-            document.getElementById('active-count').innerHTML = `<i class="fas fa-circle"></i> ${Math.floor(Math.random() * 10) + 1} Active sasa hivi`;
+        function initRealtime(userId) {
+            const chatChannel = _supabase.channel('global-chat', {
+                config: { presence: { key: userId } }
+            });
+
+            chatChannel
+                .on('presence', { event: 'sync' }, () => {
+                    const onlineCount = Object.keys(chatChannel.presenceState()).length;
+                    document.getElementById('active-count').innerText = `${onlineCount} Active Sasa hivi`;
+                })
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                    appendMessage(payload.new);
+                })
+                .subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await chatChannel.track({ online_at: new Date().toISOString() });
+                    }
+                });
         }
 
         async function loadMessages() {
-            const { data } = await _supabase.from('messages').select('*').order('id', { ascending: true }).limit(50);
-            if (data) {
-                data.forEach(msg => appendMessage(msg));
-            }
+            const { data } = await _supabase.from('messages').select('*').order('id', { ascending: true }).limit(100);
+            if(data) data.forEach(msg => appendMessage(msg));
         }
 
         function appendMessage(msg) {
             const chatBox = document.getElementById('chat-box');
             const isMe = msg.sender_id === myProfile.id;
-            const roleClass = msg.sender_role === 'merchant' ? 'role-merchant' : 'role-worker';
-            const roleName = msg.sender_role === 'merchant' ? 'MERCHANT' : 'WORKER';
+            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             const div = document.createElement('div');
-            div.className = `msg-bubble ${isMe ? 'me' : ''}`;
+            div.className = `msg-container ${isMe ? 'me' : 'others'}`;
+            div.onclick = () => setReply(msg.sender_name, msg.content);
+
+            let replyHtml = msg.reply_to_name ? `<div class="reply-quoted"><b>@${msg.reply_to_name}</b><br>${msg.reply_to_msg}</div>` : '';
+            const roleColor = msg.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)';
+
             div.innerHTML = `
-                <div class="sender-info">
-                    <span style="color: ${msg.sender_role === 'merchant' ? '#ffc947' : '#22c55e'}">${msg.sender_name}</span>
-                    <span class="role-badge ${roleClass}">${roleName}</span>
+                ${replyHtml}
+                <div class="sender-name">
+                    <span style="color: ${roleColor}">${isMe ? 'Wewe' : msg.sender_name}</span>
+                    <span class="role-badge" style="background: ${roleColor}">${msg.sender_role}</span>
                 </div>
                 <div class="text">${msg.content}</div>
+                <div class="msg-footer">
+                    <span>${time}</span>
+                    ${isMe ? '<i class="fas fa-check tick"></i>' : ''}
+                </div>
             `;
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        function setReply(name, text) {
+            replyData = { name, text };
+            document.getElementById('reply-preview-bar').style.display = 'flex';
+            document.getElementById('reply-info').innerHTML = `<small style="color:var(--gold)">Kujibu @${name}</small><br>${text.substring(0, 35)}...`;
+            document.getElementById('msg-input').focus();
+        }
+
+        function cancelReply() {
+            replyData = null;
+            document.getElementById('reply-preview-bar').style.display = 'none';
+        }
+
         async function sendMessage() {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
-            if (!text) return;
+            if(!text) return;
 
-            const { error } = await _supabase.from('messages').insert([{
+            const newMessage = {
                 sender_id: myProfile.id,
                 sender_name: myProfile.username || myProfile.full_name,
-                sender_role: myProfile.role || 'worker', // Hakikisha column ya 'role' ipo
-                content: text
-            }]);
+                sender_role: myProfile.role || 'worker',
+                content: text,
+                reply_to_name: replyData ? replyData.name : null,
+                reply_to_msg: replyData ? replyData.text : null
+            };
 
-            if (!error) input.value = '';
+            input.value = '';
+            cancelReply();
+
+            const { error } = await _supabase.from('messages').insert([newMessage]);
+            if(error) alert("Imeshindwa kutuma!");
         }
 
-        initChat();
+        // Enter key to send
+        document.getElementById('msg-input').addEventListener("keyup", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        start();
     </script>
 </body>
 </html>
