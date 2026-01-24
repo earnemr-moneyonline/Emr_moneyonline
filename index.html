@@ -107,6 +107,7 @@
     </div>
 
     <script>
+        // Supabase Initialization
         const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -115,7 +116,9 @@
         function genCaptcha() {
             const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
             captchaCode = "";
-            for (let i = 0; i < 6; i++) { captchaCode += chars.charAt(Math.floor(Math.random() * chars.length)); }
+            for (let i = 0; i < 6; i++) { 
+                captchaCode += chars.charAt(Math.floor(Math.random() * chars.length)); 
+            }
             document.getElementById('captcha-display').innerText = captchaCode;
         }
         genCaptcha();
@@ -138,51 +141,64 @@
             const status = document.getElementById('status');
             const fullPhone = code + phoneNum;
 
-            // ULINZI (Security Checks)
-            if(!name || !email || !phoneNum || !pass) { alert("Jaza nafasi zote!"); return; }
-            if(pass !== confirm) { status.innerText = "❌ Password hazifanani!"; status.style.color="red"; return; }
+            // 1. Ulinzi na Validations
+            if(!name || !email || !phoneNum || !pass) { 
+                status.innerText = "❌ Tafadhali jaza nafasi zote!"; 
+                status.style.color="red"; 
+                return; 
+            }
+            if(pass !== confirm) { 
+                status.innerText = "❌ Password hazifanani!"; 
+                status.style.color="red"; 
+                return; 
+            }
             if(captchaInput.toUpperCase() !== captchaCode) { 
-                status.innerText = "❌ Kodi ya Robot ni makosa!"; status.style.color="red";
-                genCaptcha(); return; 
+                status.innerText = "❌ Kodi ya Robot ni makosa!"; 
+                status.style.color="red";
+                genCaptcha(); 
+                return; 
             }
 
-            status.innerText = "Inasajili... Tafadhali subiri."; status.style.color="blue";
+            status.innerText = "Inasajili... Tafadhali subiri."; 
+            status.style.color="blue";
 
-            // 1. Usajili Auth (Haitatuma email kwa sababu umeizima kule Supabase Dashboard)
-            const { data, error } = await _supabase.auth.signUp({
-                email: email, 
-                password: pass
-            });
+            try {
+                // 2. Usajili kwenye Auth
+                const { data, error } = await _supabase.auth.signUp({
+                    email: email, 
+                    password: pass
+                });
 
-            if(error) { 
-                status.innerText = "Error: " + error.message; status.style.color="red"; 
-            } else {
-                // 2. Hifadhi Credentials kwenye table ya 'profiles'
+                if(error) throw error;
+
+                // 3. Hifadhi au Update Profile (Upsert kuzuia Duplicate Key Error)
                 const user = data.user;
-                // Tunatumia upsert badala ya insert ili kuzuia error ya "Duplicate Key"
-              const { error: profileError } = await _supabase
-               .from('profiles')
-               .upsert([{ 
-        id: user.id, 
-        full_name: name, 
-        username: email.split('@')[0], 
-        phone: fullPhone,
-        balance: 0,
-        status: 'active',
-        is_admin: 0 
-    }], { onConflict: 'id' }); 
+                const { error: profileError } = await _supabase
+                    .from('profiles')
+                    .upsert([{ 
+                        id: user.id, 
+                        full_name: name, 
+                        username: email.split('@')[0], 
+                        phone: fullPhone,
+                        balance: 0,
+                        status: 'active',
+                        is_admin: 0 
+                    }], { onConflict: 'id' }); 
 
-                    
+                if(profileError) throw profileError;
 
-                if(profileError) {
-                    status.innerText = "❌ Profile error: " + profileError.message;
-                } else {
-                    status.innerText = "✅ Hongera! Usajili Umekamilika. Unapelekwa Login...";
-                    status.style.color="green";
-                    
-                    // Elekeza Login baada ya sekunde 2
-                    setTimeout(() => { window.location.href = 'login.html'; }, 2000);
-                }
+                // 4. Mafanikio
+                status.innerText = "✅ Hongera! Usajili Umekamilika. Unapelekwa Login...";
+                status.style.color="green";
+                
+                setTimeout(() => { 
+                    window.location.href = 'login.html'; 
+                }, 2000);
+
+            } catch (err) {
+                status.innerText = "❌ Error: " + err.message; 
+                status.style.color="red";
+                genCaptcha(); // Refresh captcha mambo yakifeli
             }
         }
     </script>
