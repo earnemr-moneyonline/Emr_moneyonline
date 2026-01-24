@@ -17,11 +17,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: var(--bg); color: white; padding: 20px; padding-bottom: 50px; }
 
-        /* Header */
         .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
         .header h3 { font-size: 1.1rem; font-weight: 600; }
 
-        /* Grid ya Mitandao & Benki */
         .section-title { font-size: 0.75rem; color: var(--gold); margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
         .method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
         
@@ -30,11 +28,11 @@
             border: 2px solid transparent; cursor: pointer; transition: 0.3s;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .method-item img { width: 100%; height: 40px; object-fit: contain; margin-bottom: 8px; border-radius: 4px; }
+        /* Hapa ndipo logo zako za GitHub zitakaa */
+        .method-item img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 8px; border-radius: 8px; background: white; padding: 2px; }
         .method-item p { font-size: 0.6rem; font-weight: 600; opacity: 0.9; }
         .method-item.active { border-color: var(--gold); background: rgba(255, 201, 71, 0.08); transform: scale(1.05); }
 
-        /* Maelekezo (Instruction Card) */
         .instruction-card { 
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
             border-radius: 20px; padding: 20px; margin-bottom: 25px; display: none;
@@ -48,21 +46,18 @@
             display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem; flex-shrink: 0; 
         }
 
-        /* Input Fields */
         .form-group { margin-bottom: 15px; }
         input { 
             width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #334155; 
             background: var(--card); color: white; outline: none; font-size: 0.95rem;
         }
-        input:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(255, 201, 71, 0.1); }
+        input:focus { border-color: var(--gold); }
 
         .btn-pay { 
             width: 100%; padding: 18px; background: var(--gold); border: none; 
             border-radius: 14px; font-weight: 800; color: #000; cursor: pointer; font-size: 1rem;
-            box-shadow: 0 4px 15px rgba(255, 201, 71, 0.2);
         }
 
-        /* Transaction History */
         .history-section { margin-top: 40px; }
         .history-card { 
             background: rgba(255,255,255,0.02); padding: 16px; border-radius: 15px; 
@@ -84,31 +79,31 @@
     <p class="section-title">Chagua Njia ya Malipo</p>
     <div class="method-grid">
         <div class="method-item" onclick="showGuide('voda')">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Vodafone_icon.svg/1024px-Vodafone_icon.svg.png" alt="Vodacom">
+            <img src="voda.png" alt="Vodacom">
             <p>M-Pesa</p>
         </div>
         <div class="method-item" onclick="showGuide('airtel')">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Airtel_logo.png" alt="Airtel">
+            <img src="airtel.png" alt="Airtel">
             <p>Airtel Money</p>
         </div>
         <div class="method-item" onclick="showGuide('tigo')">
-            <img src="https://logos-world.net/wp-content/uploads/2022/11/Tigo-Logo.png" alt="Tigo">
+            <img src="tigo.png" alt="Tigo">
             <p>Tigo Pesa</p>
         </div>
         <div class="method-item" onclick="showGuide('mixx')">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_x5_m988Nq8X93N-H53r_7mX3Yx2K-3kHZw&s" alt="Mixx">
+            <img src="tigo.png" alt="Mixx">
             <p>Mixx by Yas</p>
         </div>
         <div class="method-item" onclick="showGuide('halo')">
-            <img src="https://halopesa.co.tz/wp-content/uploads/2021/03/halopesa-logo.png" alt="HaloPesa">
+            <img src="halopesa.png" alt="HaloPesa">
             <p>HaloPesa</p>
         </div>
         <div class="method-item" onclick="showGuide('nmb')">
-            <img src="https://www.nmbbank.co.tz/images/nmb-logo.png" alt="NMB">
+            <img src="nmb.png" alt="NMB">
             <p>NMB Bank</p>
         </div>
         <div class="method-item" onclick="showGuide('crdb')">
-            <img src="https://crdbbank.co.tz/wp-content/uploads/2020/06/CRDB-Logo.png" alt="CRDB">
+            <img src="crdb.png" alt="CRDB">
             <p>CRDB Bank</p>
         </div>
     </div>
@@ -129,22 +124,19 @@
 
     <div class="history-section">
         <p class="section-title">Historia ya Miamala</p>
-        <div id="history-list">
-            <p style="font-size: 0.7rem; opacity: 0.4; text-align: center; padding: 20px;">Inapakia historia ya miamala...</p>
-        </div>
+        <div id="history-list"></div>
     </div>
 
     <script>
-        // Supabase Configuration
         const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Guide Data for All Networks
+        // Maelekezo ya Kweli ya Tanzania (Merchant Pay/Lipa Namba)
         const guides = {
             voda: { 
                 title: "LIPA KWA VODACOM (M-PESA)", 
-                steps: ["Piga *150*00#", "Chagua 4 (Lipa kwa M-Pesa)", "Chagua 4 (Weka namba ya kampuni)", "Ingiza namba ya kampuni: 0740430220", "Ingiza Kiasi na Siri."] 
+                steps: ["Piga *150*00#", "Chagua 4 (Lipa kwa M-Pesa)", "Chagua 4 (Weka namba ya kampuni)", "Namba ya kampuni: 0740430220", "Ingiza Kiasi na Siri."] 
             },
             airtel: { 
                 title: "LIPA KWA AIRTEL MONEY", 
@@ -152,11 +144,11 @@
             },
             tigo: { 
                 title: "LIPA KWA TIGO PESA", 
-                steps: ["Piga *150*01#", "Chagua 5 (Lipa kwa Simu)", "Chagua 1 (Kwenda Tigo Pesa)", "Ingiza namba ya mfanyabiashara: 065XXXXXXX", "Ingiza Kiasi na Siri."] 
+                steps: ["Piga *150*01#", "Chagua 5 (Lipa kwa Simu)", "Chagua 1 (Kwenda Tigo Pesa)", "Namba ya Simu: 0652615822", "Ingiza Kiasi na Siri."] 
             },
             mixx: { 
                 title: "LIPA KWA MIXX BY YAS (ZANTEL)", 
-                steps: ["Piga *150*02#", "Chagua 5 (Lipa kwa Mixx by Yas)", "Chagua 4 (Weka namba ya kampuni)", "Ingiza namba: 077XXXXXXX", "Ingiza Kiasi na Siri."] 
+                steps: ["Piga *150*02#", "Chagua 5 (Lipa kwa Mixx by Yas)", "Ingiza namba ya Kampuni: 0740430220", "Ingiza Kiasi na Siri."] 
             },
             halo: { 
                 title: "LIPA KWA HALOPESA", 
@@ -164,21 +156,19 @@
             },
             nmb: { 
                 title: "BENKI: NMB TRANSFER", 
-                steps: ["Fungua NMB App au Piga *150*66#", "Chagua Transfer kwenda NMB", "Akaunti: 221100XXXXX", "Jina: EMR MONEY GROUP"] 
+                steps: ["Fungua NMB App au Piga *150*66#", "Chagua Tuma Pesa kwenda NMB", "Akaunti: 22110056789", "Jina: EMR BUSINESS GROUP"] 
             },
             crdb: { 
                 title: "BENKI: CRDB TRANSFER", 
-                steps: ["Fungua SimBanking App", "Chagua 'Tuma Pesa'", "Kwenye CRDB Akaunti: 015XXXXXXX", "Jina: EMR MONEY GROUP"] 
+                steps: ["Fungua SimBanking App", "Chagua 'Tuma Pesa'", "Kwenye CRDB Akaunti: 0152445678900", "Jina: EMR BUSINESS GROUP"] 
             }
         };
 
         function showGuide(id) {
-            // Highlight Selected Icon
             document.querySelectorAll('.method-item').forEach(i => i.classList.remove('active'));
             event.currentTarget.classList.add('active');
             
-            // Show Instructions
-            const g = guides[id] || {title: "MAELEKEZO", steps: ["Tuma kiasi kwenda namba 0740430220", "Nakili Transaction ID na uweke hapa chini."]};
+            const g = guides[id];
             document.getElementById('guide-title').innerText = g.title;
             document.getElementById('steps-container').innerHTML = g.steps.map((s, i) => `
                 <div class="step">
@@ -193,23 +183,21 @@
             const amt = document.getElementById('amount').value;
             const tid = document.getElementById('trans_id').value;
 
-            if (amt < 5000) { alert("Samahani, kiwango cha chini ni TZS 5,000"); return; }
-            if (!tid) { alert("Tafadhali ingiza Transaction ID"); return; }
+            if (amt < 5000) { alert("Kiwango cha chini ni TZS 5,000"); return; }
+            if (!tid) { alert("Weka Transaction ID ya muamala wako"); return; }
 
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) return alert("Tafadhali ingia kwenye akaunti kwanza.");
+            if (!user) return;
 
             const { error } = await _supabase.from('deposits').insert([
                 { user_id: user.id, amount: parseInt(amt), transaction_id: tid, status: 'pending' }
             ]);
 
             if (!error) {
-                alert("Ombi lako limepokelewa! Tunahakiki muamala wako sasa.");
-                document.getElementById('amount').value = '';
-                document.getElementById('trans_id').value = '';
-                fetchHistory();
+                alert("Ombi limetumwa! Tunahakiki sasa hivi.");
+                location.reload();
             } else {
-                alert("Hitilafu! Transaction ID hii imeshatumika.");
+                alert("Transaction ID hii tayari ipo kwenye mfumo.");
             }
         }
 
@@ -217,22 +205,14 @@
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) return;
 
-            const { data, error } = await _supabase
-                .from('deposits')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
+            const { data } = await _supabase.from('deposits').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
 
             if (data) {
                 const list = document.getElementById('history-list');
-                if (data.length === 0) {
-                    list.innerHTML = `<p style="font-size: 0.7rem; opacity: 0.4; text-align: center; padding: 20px;">Hujawahi kufanya muamala.</p>`;
-                    return;
-                }
                 list.innerHTML = data.map(d => `
                     <div class="history-card">
                         <div>
-                            <p style="font-size: 0.85rem; font-weight: 800;">TZS ${parseInt(d.amount).toLocaleString()}</p>
+                            <p style="font-size: 0.85rem; font-weight: 800;">TZS ${d.amount.toLocaleString()}</p>
                             <p style="font-size: 0.6rem; opacity: 0.5;">${new Date(d.created_at).toLocaleDateString()} | ID: ${d.transaction_id}</p>
                         </div>
                         <span class="status-pill ${d.status}">${d.status}</span>
@@ -240,8 +220,6 @@
                 `).join('');
             }
         }
-
-        // Load History on Page Start
         fetchHistory();
     </script>
 </body>
