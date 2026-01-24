@@ -3,210 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMR Merchant Pro | Official</title>
+    <title>EMR Merchant Dashboard | Official</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { 
-            --bg: #020617; 
-            --gold: #ffc947; 
-            --card: rgba(30, 41, 59, 0.7);
-            --whatsapp-green: #25D366;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Poppins', sans-serif; }
+        :root { --bg: #020617; --gold: #ffc947; --card: rgba(30, 41, 59, 0.7); --wa: #25D366; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: var(--bg); color: white; padding-bottom: 90px; }
 
-        /* Top Header */
-        .top-nav {
-            padding: 25px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(to bottom, #0f172a, var(--bg));
-        }
-        .user-info h2 { font-size: 1.2rem; color: var(--gold); }
-        .user-info p { font-size: 0.75rem; opacity: 0.6; }
+        /* Header */
+        .header { padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 1.2rem; color: var(--gold); }
+        .live-chat-icon { color: var(--gold); font-size: 1.5rem; text-decoration: none; position: relative; }
+        .live-chat-icon::after { content: ''; position: absolute; top: 0; right: 0; width: 8px; height: 8px; background: red; border-radius: 50%; }
 
-        .chat-btn {
-            background: rgba(255, 201, 71, 0.15);
-            color: var(--gold);
-            padding: 8px 15px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 0.8rem;
-            border: 1px solid var(--gold);
-            display: flex; align-items: center; gap: 8px;
-        }
-
-        /* Luxury Balance Card */
-        .wallet-section {
-            padding: 0 20px;
-            margin-top: -10px;
-        }
+        /* Balance Card */
+        .balance-section { padding: 0 20px; }
         .balance-card {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            padding: 25px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 201, 71, 0.2);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 30px 20px; border-radius: 24px; border: 1px solid rgba(255, 201, 71, 0.2);
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
-        .balance-card::after {
-            content: ''; position: absolute; top: -50%; right: -50%;
-            width: 150px; height: 150px; background: var(--gold);
-            filter: blur(80px); opacity: 0.1;
-        }
-        .balance-label { font-size: 0.8rem; opacity: 0.6; margin-bottom: 5px; }
-        .balance-amount { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 15px; }
-        
+        .balance-amount { font-size: 2.2rem; font-weight: 800; color: #fff; margin: 10px 0; letter-spacing: 1px; }
         .deposit-btn {
-            background: var(--gold);
-            color: #000;
-            padding: 10px 25px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 700;
-            display: inline-block;
-            font-size: 0.9rem;
+            display: inline-block; background: var(--gold); color: #000; padding: 12px 25px;
+            border-radius: 12px; text-decoration: none; font-weight: 700; margin-top: 5px; transition: 0.3s;
         }
 
-        /* Action Grid - Sehemu ya Vitufe */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding: 25px 20px;
+        /* Action Grid */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 25px 20px; }
+        .card { 
+            background: var(--card); padding: 25px; border-radius: 20px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.05); text-decoration: none; color: white; transition: 0.3s;
         }
-        .action-item {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 20px;
-            text-decoration: none;
-            color: white;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
-        }
-        .action-item:active { transform: scale(0.95); }
-        .action-item i { 
-            font-size: 1.8rem; 
-            color: var(--gold); 
-            margin-bottom: 10px; 
-            display: block; 
-        }
-        .action-item span { font-size: 0.85rem; font-weight: 500; }
+        .card:active { transform: scale(0.95); }
+        .card i { font-size: 1.8rem; color: var(--gold); margin-bottom: 12px; display: block; }
+        .card span { font-size: 0.8rem; font-weight: 500; }
 
-        /* WhatsApp Floating Button */
-        .wa-float {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            background: var(--whatsapp-green);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 20px rgba(37, 211, 102, 0.4);
-            z-index: 1000;
-            text-decoration: none;
+        /* WhatsApp Support */
+        .wa-btn {
+            position: fixed; bottom: 100px; right: 20px; background: var(--wa);
+            width: 60px; height: 60px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(37,211,102,0.4);
+            z-index: 100; text-decoration: none;
         }
-        .wa-float i { color: white; font-size: 30px; }
 
         /* Bottom Menu */
         .bottom-nav {
-            position: fixed; bottom: 0; width: 100%;
-            height: 75px; background: rgba(15, 23, 42, 0.95);
-            display: flex; justify-content: space-around;
-            align-items: center; border-top: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
+            position: fixed; bottom: 0; width: 100%; height: 75px; background: #0f172a;
+            display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #1e293b;
         }
-        .nav-link { text-align: center; color: #64748b; text-decoration: none; font-size: 0.7rem; }
-        .nav-link.active { color: var(--gold); }
-        .nav-link i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
-
+        .nav-item { text-align: center; color: #64748b; text-decoration: none; font-size: 0.7rem; }
+        .nav-item.active { color: var(--gold); }
     </style>
 </head>
 <body>
 
-    <div class="top-nav">
-        <div class="user-info">
-            <p>Karibu tena,</p>
-            <h2 id="m-name">...</h2>
+    <div class="header">
+        <div>
+            <p style="font-size: 0.75rem; opacity: 0.6;">Karibu Boss,</p>
+            <h2 id="merchant-name">Inapakia...</h2>
         </div>
-        <a href="live_chat.html" class="chat-btn">
-            <i class="fas fa-headset"></i> Chat Live
-        </a>
+        <a href="live_chat.html" class="live-chat-icon"><i class="fas fa-comment-dots"></i></a>
     </div>
 
-    <div class="wallet-section">
+    <div class="balance-section">
         <div class="balance-card">
-            <div class="balance-label">Salio la Kampeni</div>
-            <div class="balance-amount" id="m-balance">TZS 0</div>
-            <a href="deposit.html" class="deposit-btn">Weka Pesa</a>
+            <p style="font-size: 0.8rem; opacity: 0.7;">Salio la Matangazo</p>
+            <div class="balance-amount" id="balance-txt">TZS 0</div>
+            <a href="deposit.html" class="deposit-btn">WEKA PESA</a>
         </div>
     </div>
 
-    <div class="action-grid">
-        <a href="create_job.html" class="action-item">
-            <i class="fas fa-plus-circle"></i>
+    <div class="grid">
+        <div class="card" onclick="handlePostJob()">
+            <i class="fas fa-paper-plane"></i>
             <span>Anzisha Kazi</span>
-        </a>
-        <a href="merchant_orders.html" class="action-item">
-            <i class="fas fa-history"></i>
+        </div>
+        
+        <a href="merchant_orders.html" class="card">
+            <i class="fas fa-briefcase"></i>
             <span>Kazi Zangu</span>
         </a>
-        <a href="analytics.html" class="action-item">
-            <i class="fas fa-chart-bar"></i>
-            <span>Takwimu</span>
+
+        <a href="order_details.html" class="card">
+            <i class="fas fa-tasks"></i>
+            <span>Kagua Kazi</span>
         </a>
-        <a href="settings.html" class="action-item">
+
+        <a href="settings.html" class="card">
             <i class="fas fa-user-shield"></i>
             <span>Usalama</span>
         </a>
     </div>
 
-    <a href="https://wa.me/255740430220" class="wa-float" target="_blank">
-        <i class="fab fa-whatsapp"></i>
+    <a href="https://wa.me/255740430220" class="wa-btn" target="_blank">
+        <i class="fab fa-whatsapp" style="color:white; font-size:1.8rem;"></i>
     </a>
 
     <nav class="bottom-nav">
-        <a href="#" class="nav-link active"><i class="fas fa-th-large"></i><span>Home</span></a>
-        <a href="merchant_orders.html" class="nav-link"><i class="fas fa-briefcase"></i><span>Kazi</span></a>
-        <a href="wallet.html" class="nav-link"><i class="fas fa-wallet"></i><span>Wallet</span></a>
-        <a href="settings.html" class="nav-link"><i class="fas fa-user-circle"></i><span>Akaunti</span></a>
+        <a href="#" class="nav-item active"><i class="fas fa-home fa-lg"></i><br>Nyumbani</a>
+        <a href="merchant_orders.html" class="nav-item"><i class="fas fa-list-check fa-lg"></i><br>Kazi</a>
+        <a href="wallet.html" class="nav-item"><i class="fas fa-wallet-indicator fa-lg"></i><br>Pesa</a>
     </nav>
 
     <script>
-        // Supabase Logic
+        // Supabase Init
         const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K'; // Badili iwe yako
+        const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function loadMerchantProfile() {
+        let merchantBalance = 0;
+
+        async function loadData() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            document.getElementById('m-name').innerText = user.user_metadata.full_name || "Merchant Pro";
-
-            const { data: profile } = await _supabase
-                .from('profiles')
-                .select('balance')
-                .eq('id', user.id)
-                .single();
-
-            if (profile) {
-                document.getElementById('m-balance').innerText = "TZS " + profile.balance.toLocaleString();
+            if (user) {
+                document.getElementById('merchant-name').innerText = user.user_metadata.full_name || "Merchant";
+                
+                // Vuta Balance ya Kweli
+                const { data: profile } = await _supabase.from('profiles').select('balance').eq('id', user.id).single();
+                if (profile) {
+                    merchantBalance = profile.balance;
+                    document.getElementById('balance-txt').innerText = "TZS " + merchantBalance.toLocaleString();
+                }
             }
         }
 
-        loadMerchantProfile();
+        // Logic: Kuzuia kupandisha kazi bila hela
+        function handlePostJob() {
+            if (merchantBalance <= 0) {
+                alert("Ooh! Salio lako ni 0. Tafadhali weka pesa kwanza ili uweze kupandisha kazi.");
+                window.location.href = "deposit.html";
+            } else {
+                window.location.href = "create_job.html";
+            }
+        }
+
+        loadData();
     </script>
 </body>
 </html>
