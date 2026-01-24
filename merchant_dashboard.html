@@ -11,9 +11,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: var(--bg); color: white; padding-bottom: 90px; }
 
-        /* Header */
+        /* Header - Jina Kubwa */
         .header { padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .header h2 { font-size: 1.2rem; color: var(--gold); }
+        .header p { font-size: 0.8rem; opacity: 0.7; margin-bottom: 2px; }
+        .header h2 { font-size: 1.4rem; color: var(--gold); font-weight: 800; }
+        
         .live-chat-icon { color: var(--gold); font-size: 1.5rem; text-decoration: none; position: relative; }
         .live-chat-icon::after { content: ''; position: absolute; top: 0; right: 0; width: 8px; height: 8px; background: red; border-radius: 50%; }
 
@@ -48,10 +50,10 @@
             z-index: 100; text-decoration: none;
         }
 
-        /* Admin Floating Button - MPYA */
+        /* Admin Floating Button */
         .admin-btn {
             position: fixed; bottom: 175px; right: 20px; background: #ef4444;
-            width: 60px; height: 60px; border-radius: 50%; display: none; /* Inajificha kwanza */
+            width: 60px; height: 60px; border-radius: 50%; display: none;
             align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(239,68,68,0.4);
             z-index: 101; text-decoration: none; border: 2px solid white; animation: bounce 2s infinite;
         }
@@ -70,7 +72,7 @@
 
     <div class="header">
         <div>
-            <p style="font-size: 0.75rem; opacity: 0.6;">Karibu Boss,</p>
+            <p>Karibu Boss,</p>
             <h2 id="merchant-name">Inapakia...</h2>
         </div>
         <a href="live_chat.html" class="live-chat-icon"><i class="fas fa-comment-dots"></i></a>
@@ -116,12 +118,11 @@
 
     <nav class="bottom-nav">
         <a href="#" class="nav-item active"><i class="fas fa-home fa-lg"></i><br>Nyumbani</a>
-        <a href="merchant_order.html" class="nav-item"><i class="fas fa-list-check fa-lg"></i><br>Kazi</a>
+        <a href="merchant_jobs_list.html" class="nav-item"><i class="fas fa-tasks fa-lg"></i><br>Kazi</a>
         <a href="wallet.html" class="nav-item"><i class="fas fa-wallet fa-lg"></i><br>Pesa</a>
     </nav>
 
     <script>
-        // Supabase Init
         const SUPABASE_URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -131,17 +132,16 @@
         async function loadData() {
             const { data: { user } } = await _supabase.auth.getUser();
             if (user) {
-                document.getElementById('merchant-name').innerText = user.user_metadata.full_name || "Merchant";
-                
-                // Vuta Profile nzima ikijumuisha is_admin na balance
-                const { data: profile } = await _supabase.from('profiles').select('balance, is_admin').eq('id', user.id).single();
+                // Tunavuta jina kutoka table ya profiles kwa uhakika
+                const { data: profile } = await _supabase.from('profiles').select('full_name, balance, is_admin').eq('id', user.id).single();
                 
                 if (profile) {
-                    // Update Balance
-                    merchantBalance = profile.balance;
+                    // Weka jina liwe kubwa kama lilivyoandaliwa kwenye CSS
+                    document.getElementById('merchant-name').innerText = profile.full_name || "Merchant";
+                    
+                    merchantBalance = profile.balance || 0;
                     document.getElementById('balance-txt').innerText = "TZS " + merchantBalance.toLocaleString();
 
-                    // Logic ya Admin Button: Onyesha kama is_admin ni 1
                     if (profile.is_admin === 1) {
                         document.getElementById('admin-floating-btn').style.display = 'flex';
                     }
@@ -149,7 +149,6 @@
             }
         }
 
-        // Logic: Kuzuia kupandisha kazi bila hela
         function handlePostJob() {
             if (merchantBalance <= 0) {
                 alert("Ooh! Salio lako ni 0. Tafadhali weka pesa kwanza ili uweze kupandisha kazi.");
