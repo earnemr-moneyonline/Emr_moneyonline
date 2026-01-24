@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMR Community | Pro Edition</title>
+    <title>EMR Community | Intelligence Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,62 +15,57 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { height: 100%; font-family: 'Segoe UI', Helvetica, sans-serif; background: var(--bg); color: var(--light-text); overflow: hidden; }
         
-        /* Pulse Animation kwa Active Status */
-        @keyframes pulse-green {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(37, 211, 102, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
-        }
-
+        /* Header */
         .header { 
             background: var(--header); padding: 12px 16px; display: flex; 
             justify-content: space-between; align-items: center; z-index: 100; 
             position: fixed; top: 0; width: 100%; height: 65px; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .online-dot { 
-            width: 8px; height: 8px; background: var(--green); border-radius: 50%; 
-            display: inline-block; margin-right: 5px; animation: pulse-green 2s infinite;
-        }
-        .online-status { font-size: 0.75rem; color: var(--green); font-weight: 500; }
 
+        /* WhatsApp Style Background with Subtle Gradient */
         #chat-window { 
             flex: 1; height: 100vh; overflow-y: auto; 
             padding: 80px 15px 150px 15px;
-            display: flex; flex-direction: column; gap: 6px; 
-            background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); 
-            background-blend-mode: overlay; background-color: var(--bg);
+            display: flex; flex-direction: column; gap: 8px; 
+            background: 
+                linear-gradient(rgba(11, 20, 26, 0.92), rgba(11, 20, 26, 0.92)),
+                radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, rgba(0,0,0,1) 100%),
+                url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); 
+            background-blend-mode: overlay; background-size: cover;
             scroll-behavior: smooth;
         }
 
-        /* Message Bubbles - WhatsApp Style */
-        .msg { max-width: 85%; padding: 6px 10px; border-radius: 8px; font-size: 0.9rem; position: relative; animation: slideUp 0.3s ease; }
+        .online-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online-status { font-size: 0.75rem; color: var(--green); font-weight: 500; }
+
+        /* Message Bubbles */
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 10px; font-size: 0.92rem; position: relative; animation: slideUp 0.3s ease; line-height: 1.4; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .sent { align-self: flex-end; background: var(--me); border-top-right-radius: 0; }
-        .received { align-self: flex-start; background: var(--others); border-top-left-radius: 0; }
+        .sent { align-self: flex-end; background: var(--me); border-top-right-radius: 0; border: 1px solid rgba(255,255,255,0.05); }
+        .received { align-self: flex-start; background: var(--others); border-top-left-radius: 0; border: 1px solid rgba(255,255,255,0.05); }
         
-        .sender-row { font-size: 0.72rem; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
-        .badge { font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; color: #000; font-weight: 900; }
+        .sender-row { font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .badge { font-size: 0.55rem; padding: 2px 5px; border-radius: 4px; color: #000; font-weight: 900; text-transform: uppercase; margin-left: 5px; }
         .badge-admin { background: var(--admin); color: white; }
         .badge-merch { background: var(--gold); }
         .badge-work { background: var(--green); }
 
-        .reply-box { background: rgba(0,0,0,0.2); border-left: 3px solid var(--gold); padding: 5px; border-radius: 4px; margin-bottom: 4px; font-size: 0.8rem; opacity: 0.8; }
-        
-        .msg-footer { font-size: 0.62rem; display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 2px; opacity: 0.7; }
+        /* Admin Delete Button */
+        .del-msg { color: #ff4d4d; font-size: 0.85rem; cursor: pointer; margin-left: 10px; opacity: 0.5; transition: 0.3s; }
+        .del-msg:hover { opacity: 1; transform: scale(1.2); }
+
+        .reply-box { background: rgba(0,0,0,0.25); border-left: 3px solid var(--gold); padding: 6px; border-radius: 5px; margin-bottom: 5px; font-size: 0.8rem; opacity: 0.8; }
+        .msg-footer { font-size: 0.65rem; display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 4px; opacity: 0.6; }
         .tick-blue { color: #53bdeb; }
 
-        /* Typing Indicator */
-        #typing-indicator { font-size: 0.75rem; color: var(--green); font-style: italic; margin-left: 16px; position: fixed; bottom: 85px; display: none; z-index: 105; }
-
-        /* Input Plate - Inakaa muda wote (Sticky) */
+        /* Input Plate */
         .bottom-area { position: fixed; bottom: 0; width: 100%; z-index: 120; background: var(--bg); }
-        .input-bar { background: var(--header); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
-        #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; font-size: 1rem; }
-        .send-btn { background: #00a884; border: none; width: 46px; height: 46px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .send-btn:active { transform: scale(0.9); }
-
-        #reply-preview { background: #1e2a30; padding: 10px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .input-bar { background: var(--header); padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+        #msg-input { flex: 1; background: #2a3942; border: none; padding: 12px 20px; border-radius: 30px; color: white; outline: none; font-size: 1rem; }
+        .send-btn { background: #00a884; border: none; width: 48px; height: 48px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        
+        #reply-preview { background: #1e2a30; padding: 10px 15px; border-left: 5px solid var(--gold); display: none; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
@@ -78,20 +73,20 @@
 <div class="chat-container">
     <div class="header">
         <div class="online-info">
-            <h4>EMR Global Chat</h4>
+            <h4 style="font-size: 1.1rem;">EMR Community</h4>
             <div class="online-status"><span class="online-dot"></span> <span id="active-count">0 Online</span></div>
         </div>
-        <div id="total-members" style="font-size: 0.7rem; opacity: 0.5;">0 Members</div>
+        <div id="total-members" style="font-size: 0.75rem; opacity: 0.6;">0 Members</div>
     </div>
 
     <div id="chat-window"></div>
 
-    <div id="typing-indicator">Mtu anaandika...</div>
+    <div id="typing-indicator" style="font-size: 0.75rem; color: var(--green); font-style: italic; margin-left: 20px; position: fixed; bottom: 90px; display: none; z-index: 105;">Mtu anaandika...</div>
 
     <div class="bottom-area">
         <div id="reply-preview">
-            <div id="reply-text" style="font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></div>
-            <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; padding: 5px;"></i>
+            <div id="reply-text" style="font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></div>
+            <i class="fas fa-times" onclick="cancelReply()" style="cursor:pointer; padding: 8px;"></i>
         </div>
         <div class="input-bar">
             <input type="text" id="msg-input" placeholder="Andika ujumbe wa kinyama..." autocomplete="off">
@@ -104,75 +99,75 @@
     const _client = supabase.createClient('https://bnskxnaqjmsrtzglsdug.supabase.co', 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K');
     let me = null;
     let selectedReply = null;
-    let typingTimeout;
+
+    // Detection List (Bad Words)
+    const BANNED_WORDS = ['tapeli', 'matusi', 'scam', 'betting', 'izi', 'pumbavu', 'mjinga', 'jambazi', 'fake'];
 
     async function init() {
+        // Omba ruhusa ya Notifications
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
         const { data: { user } } = await _client.auth.getUser();
         if(!user) return;
         
         const { data: profile } = await _client.from('profiles').select('*').eq('id', user.id).single();
-        me = profile;
+        if(profile) {
+            // Jina la kwanza pekee
+            const rawName = profile.full_name || profile.username || "User";
+            profile.display_name = rawName.split(' ')[0];
+            me = profile;
+        }
 
-        const { count } = await _client.from('profiles').select('*', { count: 'exact', head: true });
-        document.getElementById('total-members').innerText = count + " Members";
-
-        const { data: msgs } = await _client.from('messages').select('*').order('id', { ascending: true }).limit(100);
+        // Pakia meseji 50 za mwisho
+        const { data: msgs } = await _client.from('messages').select('*').order('id', { ascending: true }).limit(50);
         if(msgs) msgs.forEach(m => render(m));
 
-        // REALTIME
-        const channel = _client.channel('emr-main', { config: { presence: { key: user.id } } });
-        
-        channel
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, p => {
-            render(p.new);
-            if (p.new.sender_id !== me.id) {
-                new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3').play().catch(()=>{});
+        // Realtime Connection
+        const channel = _client.channel('emr-global');
+        channel.on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, p => {
+            if (p.eventType === 'INSERT') {
+                render(p.new);
+                if (p.new.sender_id !== me.id && document.hidden) {
+                    showNotification(p.new.sender_name, p.new.content);
+                }
+            } else if (p.eventType === 'DELETE') {
+                const el = document.getElementById(`msg-${p.old.id}`);
+                if (el) el.remove();
             }
-        })
-        .on('broadcast', { event: 'typing' }, payload => {
-            const el = document.getElementById('typing-indicator');
-            if (payload.payload.user !== me.username) {
-                el.innerText = `${payload.payload.user} anaandika...`;
-                el.style.display = 'block';
-                setTimeout(() => el.style.display = 'none', 3000);
-            }
-        })
-        .on('presence', { event: 'sync' }, () => {
-            const online = Object.keys(channel.presenceState()).length;
-            document.getElementById('active-count').innerText = `${online} Online`;
-        })
-        .subscribe(async (s) => {
-            if (s === 'SUBSCRIBED') await channel.track({ user: me.username });
-        });
-
-        // Typing Listener
-        document.getElementById('msg-input').oninput = () => {
-            channel.send({ type: 'broadcast', event: 'typing', payload: { user: me.username || me.full_name } });
-        };
+        }).subscribe();
     }
 
     function render(m) {
         const win = document.getElementById('chat-window');
-        const isMe = m.sender_id === me.id;
+        const isMe = m.sender_id === (me ? me.id : null);
         const div = document.createElement('div');
         div.className = `msg ${isMe ? 'sent' : 'received'}`;
-        div.onclick = () => setReply(m.sender_name, m.content);
+        div.setAttribute('id', `msg-${m.id}`);
 
-        let badge = 'badge-work'; let role = m.sender_role;
-        if (m.is_admin === 1) { badge = 'badge-admin'; role = 'ADMIN'; }
-        else if (m.sender_role === 'merchant') { badge = 'badge-merch'; }
+        // Double click to reply
+        div.ondblclick = () => setReply(m.sender_name, m.content);
 
-        let reply = m.reply_to_name ? `<div class="reply-box"><b>@${m.reply_to_name}</b><br>${m.reply_to_msg}</div>` : '';
+        let badgeClass = 'badge-work';
+        if (m.is_admin === 1) badgeClass = 'badge-admin';
+        else if (m.sender_role === 'merchant') badgeClass = 'badge-merch';
+
+        // Admin Power: Delete icon
+        const adminDelete = (me && me.is_admin === 1) ? `<i class="fas fa-trash-can del-msg" onclick="deleteMessage(${m.id})"></i>` : '';
 
         div.innerHTML = `
-            ${reply}
+            ${m.reply_to_name ? `<div class="reply-box"><b>@${m.reply_to_name}</b><br>${m.reply_to_msg}</div>` : ''}
             <div class="sender-row">
-                <span style="color:${m.is_admin === 1 ? 'var(--admin)' : (m.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)')}">${isMe ? 'Wewe' : m.sender_name}</span>
-                <span class="badge ${badge}">${role}</span>
+                <div style="display:flex; align-items:center;">
+                    <span style="color:${m.is_admin === 1 ? 'var(--admin)' : (m.sender_role === 'merchant' ? 'var(--gold)' : 'var(--green)')}">${isMe ? 'Wewe' : m.sender_name}</span>
+                    <span class="badge ${badgeClass}">${m.is_admin === 1 ? 'ADMIN' : m.sender_role}</span>
+                </div>
+                ${adminDelete}
             </div>
-            ${m.content}
+            <div class="content">${m.content}</div>
             <div class="msg-footer">
-                ${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                ${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} 
                 ${isMe ? '<i class="fas fa-check-double tick-blue"></i>' : ''}
             </div>
         `;
@@ -180,10 +175,44 @@
         win.scrollTop = win.scrollHeight;
     }
 
+    async function send() {
+        const input = document.getElementById('msg-input');
+        const val = input.value.trim();
+        if(!val || !me) return;
+
+        // 1. INTELLIGENCE: Detect bad words
+        const isSpam = BANNED_WORDS.some(word => val.toLowerCase().includes(word));
+        if (isSpam) {
+            alert("🛑 ONYO: Ujumbe wako una maneno yasiyoruhusiwa. Ukirudia tena akaunti yako itafungiwa!");
+            input.value = '';
+            return;
+        }
+
+        const data = {
+            sender_id: me.id,
+            sender_name: me.display_name,
+            sender_role: me.role || 'worker',
+            is_admin: me.is_admin || 0,
+            content: val,
+            reply_to_name: selectedReply ? selectedReply.name : null,
+            reply_to_msg: selectedReply ? selectedReply.text : null
+        };
+
+        input.value = '';
+        cancelReply();
+        const { error } = await _client.from('messages').insert([data]);
+        if (error) alert("Meseji haijaenda, jaribu tena.");
+    }
+
+    async function deleteMessage(id) {
+        if (!confirm("Futa meseji hii mazima kwa kila mtu?")) return;
+        await _client.from('messages').delete().eq('id', id);
+    }
+
     function setReply(name, text) {
         selectedReply = { name, text };
         document.getElementById('reply-preview').style.display = 'flex';
-        document.getElementById('reply-text').innerHTML = `<b style="color:var(--gold)">Kujibu @${name}</b>: ${text}`;
+        document.getElementById('reply-text').innerHTML = `<b>@${name}</b>: ${text}`;
         document.getElementById('msg-input').focus();
     }
 
@@ -192,21 +221,10 @@
         document.getElementById('reply-preview').style.display = 'none';
     }
 
-    async function send() {
-        const input = document.getElementById('msg-input');
-        const val = input.value.trim();
-        if(!val) return;
-
-        const data = {
-            sender_id: me.id, sender_name: me.username || me.full_name,
-            sender_role: me.role || 'worker', is_admin: me.is_admin || 0,
-            content: val, reply_to_name: selectedReply ? selectedReply.name : null,
-            reply_to_msg: selectedReply ? selectedReply.text : null
-        };
-
-        input.value = '';
-        cancelReply();
-        await _client.from('messages').insert([data]);
+    function showNotification(sender, text) {
+        if (Notification.permission === "granted") {
+            new Notification(`EMR Community: ${sender}`, { body: text });
+        }
     }
 
     document.getElementById('msg-input').onkeyup = (e) => { if(e.key === "Enter") send(); };
