@@ -16,27 +16,34 @@
         .nav-tab { opacity: 0.6; cursor: pointer; position: relative; font-size: 1.1rem; }
         .nav-tab.active { opacity: 1; border-bottom: 3px solid white; }
 
-        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .feed::-webkit-scrollbar { display: none; }
+        
         .job-card { height: 100vh; width: 100%; scroll-snap-align: center; position: relative; display: flex; flex-direction: column; justify-content: flex-end; }
         .full-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; z-index: -1; }
-        .overlay { position: absolute; bottom: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(0,0,0,1), transparent); }
+        .overlay { position: absolute; bottom: 0; width: 100%; height: 60%; background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.5) 50%, transparent); }
 
-        .side-bar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 10; }
-        .icon-group { text-align: center; cursor: pointer; }
-        .icon-group i { font-size: 2rem; display: block; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-        .icon-group span { font-size: 0.75rem; font-weight: 600; }
-        .pfp-wrap { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background-size: cover; }
+        .side-bar { position: absolute; right: 12px; bottom: 130px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; }
+        .icon-group { text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .icon-group:active { transform: scale(0.9); }
+        .icon-group i { font-size: 2.2rem; display: block; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        .icon-group span { font-size: 0.75rem; font-weight: 600; margin-top: 2px; display: block; }
+        
+        .pfp-wrap { width: 52px; height: 52px; border-radius: 50%; border: 2px solid white; background-size: cover; background-position: center; position: relative; margin-bottom: 5px; }
+        .follow-badge { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #fe2c55; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid black; }
 
-        .content-info { padding: 20px; margin-bottom: 80px; width: 85%; z-index: 5; }
-        .user-handle { font-weight: 700; font-size: 1.2rem; margin-bottom: 5px; color: var(--emr-gold); }
-        .job-desc { font-size: 0.95rem; line-height: 1.4; opacity: 0.9; margin-bottom: 15px; }
-        .price-badge { background: var(--emr-gold); color: black; display: inline-block; padding: 6px 15px; border-radius: 8px; font-weight: 800; margin-bottom: 15px; }
+        .content-info { padding: 20px; margin-bottom: 85px; width: 85%; z-index: 5; }
+        .user-handle { font-weight: 700; font-size: 1.2rem; margin-bottom: 5px; color: white; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .job-desc { font-size: 0.95rem; line-height: 1.4; opacity: 0.9; margin-bottom: 12px; color: #eee; }
+        .job-desc a { color: var(--emr-gold); text-decoration: underline; pointer-events: auto; } /* Link clickable */
 
-        .bottom-menu { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1001; }
+        .price-badge { background: var(--emr-gold); color: black; display: inline-block; padding: 6px 15px; border-radius: 8px; font-weight: 800; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(255,201,71,0.3); }
+
+        .bottom-menu { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1001; }
         .menu-item { color: #777; text-align: center; cursor: pointer; text-decoration: none; }
         .menu-item.active { color: white; }
-        .menu-item i { font-size: 1.6rem; display: block; }
-        .notif-btn { color: var(--emr-gold) !important; font-size: 2.2rem !important; }
+        .menu-item i { font-size: 1.6rem; }
+        .notif-btn { color: var(--emr-gold) !important; font-size: 2.3rem !important; }
     </style>
 </head>
 <body>
@@ -48,9 +55,7 @@
         </div>
     </div>
 
-    <div class="feed" id="feedContainer">
-        <div style="padding:150px 20px; text-align:center;">Inapakia kazi halisi...</div>
-    </div>
+    <div class="feed" id="feedContainer"></div>
 
     <div class="bottom-menu">
         <a href="index.html" class="menu-item active"><i class="fas fa-home"></i></a>
@@ -67,54 +72,75 @@
 
         async function fetchJobs() {
             const feed = document.getElementById('feedContainer');
-            
-            // Muhimu: Tunavuta kazi na kuunganisha na Merchant kwa ID
             const { data: jobs, error } = await _supabase
                 .from('jobs')
-                .select('*, profiles!merchant_id(username, avatar_url)');
+                .select('*, profiles!merchant_id(full_name, avatar_url, username)');
 
             if (error) {
-                console.error("Error detected:", error);
-                feed.innerHTML = `<div style="padding:100px 20px; text-align:center">Error: ${error.message}<br><small>Hakikisha umefanya hatua ya SQL kwanza!</small></div>`;
-                return;
-            }
-
-            if (!jobs || jobs.length === 0) {
-                feed.innerHTML = `<div style="padding:150px 20px; text-align:center">Hakuna kazi hewani kwa sasa.</div>`;
+                feed.innerHTML = `<div style="padding:100px; text-align:center">${error.message}</div>`;
                 return;
             }
 
             feed.innerHTML = '';
             jobs.forEach(job => {
-                const username = job.profiles?.username || 'Merchant';
+                // Jina la kwanza pekee la mfanyabiashara
+                const fullName = job.profiles?.full_name || job.profiles?.username || 'Merchant';
+                const firstName = fullName.split(' ')[0];
                 const avatar = job.profiles?.avatar_url || 'https://i.pravatar.cc/100';
                 
+                // Tunafanya link ndani ya description ziweze kugusika
+                const descWithLinks = job.description.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+
                 feed.innerHTML += `
                 <div class="job-card">
                     <div class="full-img" style="background-image: url('${job.image_url}')"></div>
                     <div class="overlay"></div>
                     <div class="side-bar">
-                        <div class="pfp-wrap" style="background-image: url('${avatar}')"></div>
-                        <div class="icon-group"><i class="fas fa-heart"></i><span>Like</span></div>
-                        <div class="icon-group" onclick="shareIt()"><i class="fas fa-share"></i><span>Share</span></div>
-                        <div class="icon-group"><i class="fas fa-bookmark"></i><span>Save</span></div>
+                        <div class="pfp-wrap" style="background-image: url('${avatar}')">
+                            <div class="follow-badge" onclick="followMerchant('${job.merchant_id}')"><i class="fas fa-plus"></i></div>
+                        </div>
+                        <div class="icon-group" onclick="likeJob('${job.id}', this)">
+                            <i class="fas fa-heart"></i>
+                            <span class="like-count">1.2k</span>
+                        </div>
+                        <div class="icon-group" onclick="shareIt()">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </div>
+                        <div class="icon-group">
+                            <i class="fas fa-bookmark"></i>
+                            <span>Save</span>
+                        </div>
                     </div>
                     <div class="content-info">
-                        <div class="user-handle">@${username}</div>
-                        <div class="job-desc"><strong>${job.title}</strong><br>${job.description}</div>
+                        <div class="user-handle" onclick="location.href='profile.html?id=${job.merchant_id}'">
+                            @${firstName} <i class="fas fa-check-circle" style="color:#1da1f2; font-size:14px"></i>
+                        </div>
+                        <div class="job-desc"><strong>${job.title}</strong><br>${descWithLinks}</div>
                         <div class="price-badge">TZS ${job.price}</div>
-                        <button onclick="startTask('${job.id}')" style="width:100%; background:var(--emr-gold); color:black; border:none; padding:15px; border-radius:10px; font-weight:900; font-size:1rem">ANZA KAZI</button>
+                        <button onclick="startTask('${job.id}')" style="width:100%; background:var(--emr-gold); color:black; border:none; padding:15px; border-radius:12px; font-weight:900; font-size:1rem; cursor:pointer">ANZA KAZI</button>
                     </div>
                 </div>`;
             });
         }
 
+        async function followMerchant(merchantId) {
+            // Hapa utaongeza logic ya ku-insert kwenye 'followers' table
+            alert("Umeanza kumfuata " + merchantId);
+        }
+
+        async function likeJob(jobId, element) {
+            const icon = element.querySelector('i');
+            icon.style.color = icon.style.color === 'red' ? 'white' : 'red';
+            // Reality: Hapa tunge-update count kwenye 'job_likes' table
+        }
+
         function shareIt() {
-            if (navigator.share) navigator.share({title: 'EMR Jobs', url: window.location.href});
+            if (navigator.share) navigator.share({title: 'EMR Job', url: window.location.href});
         }
 
         function startTask(id) {
-            alert("Kazi imeanza! Tunza screenshot ya ushahidi.");
+            alert("Kazi imeanza! Piga screenshot ukimaliza.");
         }
 
         fetchJobs();
