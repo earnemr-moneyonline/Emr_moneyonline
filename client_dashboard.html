@@ -37,7 +37,6 @@
         .user-handle { font-weight: 700; font-size: 1.2rem; margin-bottom: 8px; color: white; display: flex; align-items: center; gap: 5px; }
         .job-progress { font-size: 0.8rem; color: #ffc947; margin-bottom: 5px; font-weight: 600; }
         .job-desc { font-size: 0.95rem; line-height: 1.4; margin-bottom: 12px; color: #f5f5f5; }
-        .job-desc a { color: var(--emr-gold); text-decoration: underline; font-weight: bold; }
         
         .price-tag { background: rgba(255, 201, 71, 0.2); color: var(--emr-gold); border: 1px solid var(--emr-gold); display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: 800; margin-bottom: 10px; font-size: 0.9rem; }
         .btn-work { width: 100%; background: var(--emr-gold); color: black; border: none; padding: 16px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 1rem; text-transform: uppercase; }
@@ -83,14 +82,13 @@
             const feed = document.getElementById('feedContainer');
             feed.innerHTML = '<center style="padding-top:50vh">Inapakia...</center>';
             
-            // Tab Toggle UI
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
             document.getElementById(mode === 'foryou' ? 'forYouTab' : 'followingTab').classList.add('active');
 
             const { data: { user } } = await _supabase.auth.getUser();
 
-            // Query ya msingi
-            let query = _supabase
+            // 1. Vuta kazi zote kwanza
+            const { data: jobs, error } = await _supabase
                 .from('jobs')
                 .select(`
                     *, 
@@ -98,36 +96,39 @@
                         full_name, avatar_url, username,
                         followers!merchant_id (follower_id)
                     ),
-                    job_likes (user_id),
-                    submissions:job_submissions(count)
+                    job_likes (user_id)
                 `);
 
-            const { data: jobs, error } = await query;
             if (error) { feed.innerHTML = `<center style="margin-top:50%">${error.message}</center>`; return; }
 
-            // Logic ya Filtering kwa Tab ya Following
+            // 2. Vuta Submissions zote ili kuhesabu progress (Hii inatatua error yako ya relationship)
+            const { data: submissions } = await _supabase.from('job_submissions').select('job_id');
+
             let filteredJobs = jobs;
-            if (mode === 'following' && user) {
+
+            // 3. Logic ya Following Tab
+            if (mode === 'following') {
+                if (!user) return alert("Ingia kwanza kuona unaowafuata!");
                 filteredJobs = jobs.filter(job => 
                     job.profiles?.followers?.some(f => f.follower_id === user.id)
                 );
             }
 
             if (filteredJobs.length === 0) {
-                feed.innerHTML = `<center style="padding-top:50vh">Bado haujamfuata mtu yeyote.</center>`;
+                feed.innerHTML = `<center style="padding-top:50vh">Hakuna kazi hapa kwa sasa.</center>`;
                 return;
             }
 
             feed.innerHTML = '';
             filteredJobs.forEach(job => {
                 const profile = job.profiles;
-                const firstName = (profile?.full_name || "Merchant").split(' ')[0];
+                const firstName = (profile?.full_name || profile?.username || "Merchant").split(' ')[0];
                 const avatar = profile?.avatar_url || 'https://i.pravatar.cc/100';
                 
-                // Progress Logic
-                const done = job.submissions?.[0]?.count || 0;
-                const total = job.required_workers || 100; // Unapaswa kuwa na column hii kwenye table ya jobs
-                const remaining = total - done;
+                // Tafuta wangapi wameshafanya kazi hii
+                const doneCount = submissions ? submissions.filter(s => s.job_id === job.id).length : 0;
+                const totalNeeded = job.required_workers || 100;
+                const remaining = totalNeeded - doneCount;
 
                 const platformLogo = getPlatformLogo(job.description + job.title);
                 const hasLiked = user && job.job_likes?.some(l => l.user_id === user.id);
@@ -156,9 +157,9 @@
                         <div class="user-handle" onclick="location.href='profile.html?id=${job.merchant_id}'">
                             @${firstName} <i class="fas fa-check-circle" style="color:#1da1f2; font-size:14px"></i>
                         </div>
-                        <div class="job-progress">${done} wameshafanya • Nafasi ${remaining} zimebaki</div>
-                        <div class="job-desc">${job.title}</div>
-                        <div class="price-tag">Unakusanya: TZS ${job.price}</div>
+                        <div class="job-progress">${doneCount} wameshafanya • Nafasi ${remaining} zimebaki</div>
+                        <div class="job-desc"><strong>${job.title}</strong></div>
+                        <div class="price-tag">Malipo: TZS ${job.price}</div>
                         <button class="btn-work" onclick="startTask('${job.id}')">ANZA KAZI</button>
                     </div>
                 </div>`;
@@ -186,7 +187,7 @@
         }
 
         function shareIt() { if (navigator.share) navigator.share({title: 'EMR Job', url: window.location.href}); }
-        function startTask(id) { alert("Kazi imeanza! Screenshot matokeo."); }
+        function startTask(id) { alert("Kazi imeanza! Screenshot kielelezo ukimaliza."); }
 
         fetchJobs('foryou');
     </script>
