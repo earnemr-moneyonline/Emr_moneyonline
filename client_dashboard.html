@@ -11,41 +11,29 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: white; overflow: hidden; }
 
-        /* Top Tabs */
-        .top-nav {
-            position: fixed; top: 0; width: 100%; height: 80px;
-            display: flex; justify-content: center; align-items: flex-end;
-            padding-bottom: 10px; z-index: 1000;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
-        }
+        .top-nav { position: fixed; top: 0; width: 100%; height: 80px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 10px; z-index: 1000; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
         .nav-tabs { display: flex; gap: 20px; font-weight: 700; }
         .nav-tab { opacity: 0.6; cursor: pointer; position: relative; font-size: 1.1rem; }
         .nav-tab.active { opacity: 1; border-bottom: 3px solid white; }
 
-        /* Feed System */
         .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
         .job-card { height: 100vh; width: 100%; scroll-snap-align: center; position: relative; display: flex; flex-direction: column; justify-content: flex-end; }
-
         .full-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; z-index: -1; }
         .overlay { position: absolute; bottom: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(0,0,0,1), transparent); }
 
-        /* Side Bar Interaction */
         .side-bar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 10; }
         .icon-group { text-align: center; cursor: pointer; }
         .icon-group i { font-size: 2rem; display: block; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         .icon-group span { font-size: 0.75rem; font-weight: 600; }
-        
-        .pfp-wrap { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background-size: cover; margin-bottom: 10px; }
+        .pfp-wrap { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background-size: cover; }
 
-        /* Content Info */
         .content-info { padding: 20px; margin-bottom: 80px; width: 85%; z-index: 5; }
         .user-handle { font-weight: 700; font-size: 1.2rem; margin-bottom: 5px; color: var(--emr-gold); }
         .job-desc { font-size: 0.95rem; line-height: 1.4; opacity: 0.9; margin-bottom: 15px; }
         .price-badge { background: var(--emr-gold); color: black; display: inline-block; padding: 6px 15px; border-radius: 8px; font-weight: 800; margin-bottom: 15px; }
 
-        /* Footer Menu */
         .bottom-menu { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1001; }
-        .menu-item { color: #777; text-align: center; cursor: pointer; }
+        .menu-item { color: #777; text-align: center; cursor: pointer; text-decoration: none; }
         .menu-item.active { color: white; }
         .menu-item i { font-size: 1.6rem; display: block; }
         .notif-btn { color: var(--emr-gold) !important; font-size: 2.2rem !important; }
@@ -55,20 +43,21 @@
 
     <div class="top-nav">
         <div class="nav-tabs">
-            <div class="nav-tab" onclick="switchTab('following', this)">Following</div>
-            <div class="nav-tab active" onclick="switchTab('foryou', this)">For You</div>
+            <div class="nav-tab active" onclick="fetchJobs('foryou')">For You</div>
+            <div class="nav-tab" onclick="fetchJobs('following')">Following</div>
         </div>
     </div>
 
     <div class="feed" id="feedContainer">
-        </div>
+        <div style="padding:150px 20px; text-align:center;">Inapakia kazi halisi...</div>
+    </div>
 
     <div class="bottom-menu">
-        <div class="menu-item active"><i class="fas fa-home"></i></div>
-        <div class="menu-item"><i class="fas fa-search"></i></div>
-        <div class="menu-item" onclick="location.href='notifications.html'"><i class="fas fa-plus-circle notif-btn"></i></div>
-        <div class="menu-item" onclick="location.href='live_chat.html'"><i class="fas fa-comment-dots"></i></div>
-        <div class="menu-item"><i class="fas fa-user"></i></div>
+        <a href="index.html" class="menu-item active"><i class="fas fa-home"></i></a>
+        <a href="discover.html" class="menu-item"><i class="fas fa-search"></i></a>
+        <a href="notifications.html" class="menu-item"><i class="fas fa-plus-circle notif-btn"></i></a>
+        <a href="live_chat.html" class="menu-item"><i class="fas fa-comment-dots"></i></a>
+        <a href="profile.html" class="menu-item"><i class="fas fa-user"></i></a>
     </div>
 
     <script>
@@ -78,21 +67,20 @@
 
         async function fetchJobs() {
             const feed = document.getElementById('feedContainer');
-            // Hapa tunavuta data toka table ya 'jobs'
+            
+            // Muhimu: Tunavuta kazi na kuunganisha na Merchant kwa ID
             const { data: jobs, error } = await _supabase
                 .from('jobs')
-                .select(`
-                    *,
-                    profiles:merchant_id (username, avatar_url)
-                `);
+                .select('*, profiles!merchant_id(username, avatar_url)');
 
             if (error) {
-                feed.innerHTML = `<div style="padding:100px; text-align:center">Error: ${error.message}</div>`;
+                console.error("Error detected:", error);
+                feed.innerHTML = `<div style="padding:100px 20px; text-align:center">Error: ${error.message}<br><small>Hakikisha umefanya hatua ya SQL kwanza!</small></div>`;
                 return;
             }
 
             if (!jobs || jobs.length === 0) {
-                feed.innerHTML = `<div style="padding:100px; text-align:center">Hakuna kazi zilizopatikana.</div>`;
+                feed.innerHTML = `<div style="padding:150px 20px; text-align:center">Hakuna kazi hewani kwa sasa.</div>`;
                 return;
             }
 
@@ -105,29 +93,20 @@
                 <div class="job-card">
                     <div class="full-img" style="background-image: url('${job.image_url}')"></div>
                     <div class="overlay"></div>
-                    
                     <div class="side-bar">
                         <div class="pfp-wrap" style="background-image: url('${avatar}')"></div>
                         <div class="icon-group"><i class="fas fa-heart"></i><span>Like</span></div>
                         <div class="icon-group" onclick="shareIt()"><i class="fas fa-share"></i><span>Share</span></div>
                         <div class="icon-group"><i class="fas fa-bookmark"></i><span>Save</span></div>
                     </div>
-
                     <div class="content-info">
                         <div class="user-handle">@${username}</div>
-                        <div class="job-desc">${job.title}: ${job.description}</div>
+                        <div class="job-desc"><strong>${job.title}</strong><br>${job.description}</div>
                         <div class="price-badge">TZS ${job.price}</div>
                         <button onclick="startTask('${job.id}')" style="width:100%; background:var(--emr-gold); color:black; border:none; padding:15px; border-radius:10px; font-weight:900; font-size:1rem">ANZA KAZI</button>
                     </div>
-                </div>
-                `;
+                </div>`;
             });
-        }
-
-        function switchTab(type, el) {
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            fetchJobs();
         }
 
         function shareIt() {
@@ -135,10 +114,9 @@
         }
 
         function startTask(id) {
-            alert("Umeanza kazi! Hakikisha unapiga screenshot ukimaliza.");
+            alert("Kazi imeanza! Tunza screenshot ya ushahidi.");
         }
 
-        // Anza kuvuta kazi mara moja
         fetchJobs();
     </script>
 </body>
