@@ -36,10 +36,7 @@
             position: relative;
         }
 
-        .step { 
-            display: none; 
-            animation: smoothFade 1.5s ease-in-out;
-        }
+        .step { display: none; animation: smoothFade 1.5s ease-in-out; }
         .step.active { display: block; }
 
         @keyframes smoothFade { 
@@ -48,28 +45,10 @@
         }
 
         .user-name { color: #ffc947; font-weight: 600; font-size: 1.1rem; margin-bottom: 10px; display: block; }
-        .question-text { 
-            font-size: 1.3rem; 
-            font-weight: 300; 
-            line-height: 1.8; 
-            color: #f1f1f1;
-            min-height: 120px;
-        }
+        .question-text { font-size: 1.3rem; font-weight: 300; line-height: 1.8; color: #f1f1f1; min-height: 120px; }
 
-        .progress-bar {
-            width: 100%;
-            height: 3px;
-            background: rgba(255,255,255,0.1);
-            margin-top: 30px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: #ffc947;
-            width: 0%;
-            transition: width 0.3s linear;
-        }
+        .progress-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.1); margin-top: 30px; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #ffc947; width: 0%; transition: width 0.3s linear; }
 
         .role-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .role-card {
@@ -81,14 +60,8 @@
             transition: 0.4s;
             text-align: center;
         }
-        .role-card:hover { 
-            background: rgba(255, 201, 71, 0.15); 
-            border-color: #ffc947; 
-            transform: translateY(-5px);
-        }
+        .role-card:hover { background: rgba(255, 201, 71, 0.15); border-color: #ffc947; transform: translateY(-5px); }
         .role-card h3 { margin: 0; color: #ffc947; font-size: 1.4rem; }
-        .role-card p { margin: 10px 0 0; font-size: 0.9rem; color: #ddd; }
-
     </style>
 </head>
 <body>
@@ -97,7 +70,6 @@
         <div id="content-area">
             <p style="opacity: 0.5;">Inapakia safari yako...</p>
         </div>
-        
         <div class="progress-bar" id="p-bar" style="display:none;">
             <div class="progress-fill" id="p-fill"></div>
         </div>
@@ -115,36 +87,25 @@
             "Je, unajua kuwa ulimwengu wa kidijitali unatoa fursa sawa kwa kila mtu mwenye uthubutu kama wewe?",
             "Je, uko tayari kuona namba za wafuasi na ushawishi wako zikikua kwa kasi kubwa kuliko ulivyowahi kufikiria?",
             "Je, unaamini kuwa siri ya utajiri wa kizazi hiki imefichwa ndani ya kioo cha simu yako unayoishika sasa?",
-            "Je, uko tayari kuachana na mfumo wa kizamani wa kutafuta kazi na kuanza kumiliki fursa zako mwenyewe?",
-            "Je, unakubali kuwa kila sekunde unayopoteza mtandaoni bila kuzalisha thamani ni fursa iliyopotea kwako?",
             "Je, uko tayari kuingia kwenye ligi ya watu wachache wanaojua jinsi ya kugeuza 'Likes' kuwa kipato cha uhakika?",
-            "Je, unaamini kuwa jina lako linaweza kuwa chapa kubwa (Brand) inayozungumzwa na maelfu ya watu hapa EMR?",
-            "Je, uko tayari kuwekeza nidhamu na muda wako mfupi kwa ajili ya kupata matokeo yatakayodumu kwa muda mrefu?",
-            "Je, unajua kuwa EMR MONEY imejengwa kwa ajili ya watu wenye njaa ya mafanikio makubwa kama ulivyo wewe?",
             "Swali la mwisho kabisa: Je, uko tayari kuamua hatima yako ya kibiashara sasa hivi na kuanza kazi?"
         ];
 
         async function init() {
-            // 1. Pata user aliyelog-in
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
             
-            // 2. Vuta jina lake kutoka kwenye table ya profiles
-            const { data: profile, error: pError } = await _supabase
+            const { data: profile } = await _supabase
                 .from('profiles')
-                .select('full_name, status')
+                .select('full_name, role')
                 .eq('id', user.id)
                 .single();
 
-            if (pError || !profile) {
-                userName = "Mtumiaji"; // Fallback kama jina halipo kabisa
-            } else {
-                userName = profile.full_name;
-            }
+            userName = profile?.full_name || "Mtumiaji";
 
-            // 3. Kama ana role tayari kwenye metadata, mpeleke dashboard direct
-            if(user.user_metadata && user.user_metadata.role) {
-                redirectUser(user.user_metadata.role);
+            // Kama ana role tayari, asipitie maswali
+            if(profile?.role) {
+                redirectUser(profile.role);
                 return;
             }
 
@@ -156,17 +117,13 @@
             if (currentIdx < maswali.length) {
                 const progress = ((currentIdx + 1) / maswali.length) * 100;
                 document.getElementById('p-fill').style.width = progress + "%";
-
                 document.getElementById('content-area').innerHTML = `
                     <div class="step active">
                         <span class="user-name">${userName}</span>
                         <p class="question-text">${maswali[currentIdx]}</p>
-                    </div>
-                `;
-
+                    </div>`;
                 currentIdx++;
-                // Nimeiweka sekunde 3.5 kama kodi yako ya awali
-                setTimeout(showQuestion, 3500); 
+                setTimeout(showQuestion, 3000); 
             } else {
                 showRoleSelection();
             }
@@ -177,41 +134,38 @@
             document.getElementById('content-area').innerHTML = `
                 <div class="step active">
                     <span class="user-name">${userName}</span>
-                    <h2 style="margin-bottom:10px;">Hatua ya Maamuzi</h2>
-                    <p style="font-size:0.9rem; margin-bottom:20px; opacity:0.8;">Chagua njia moja itakayofungua milango yako ya mafanikio hapa EMR.</p>
+                    <h2 style="margin-bottom:20px;">Chagua Role Yako</h2>
                     <div class="role-container">
                         <div class="role-card" onclick="setRole('merchant')">
                             <h3>MFANYABIASHARA</h3>
-                            <p>Nataka kukuza biashara yangu, kupata followers, likes, na wateja wengi mtandaoni.</p>
+                            <p>Nataka kukuza biashara yangu.</p>
                         </div>
-                        <div class="role-card" onclick="setRole('client')">
-                            <h3>MFANYAKAZI (Mteja)</h3>
-                            <p>Nataka kufanya kazi, kutoa huduma za kitalaamu, na kutengeneza faida kupitia EMR.</p>
+                        <div class="role-card" onclick="setRole('worker')">
+                            <h3>MFANYAKAZI</h3>
+                            <p>Nataka kufanya kazi na kulipwa.</p>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
         async function setRole(r) {
-            const statusDiv = document.getElementById('content-area');
-            statusDiv.innerHTML = `<p>Tunaandaa Dashboard yako ya ${r === 'merchant' ? 'Ufanyabiashara' : 'Ufanyakazi'}...</p>`;
+            const { data: { user } } = await _supabase.auth.getUser();
             
-            // Tunahifadhi role kwenye metadata ili asirudi tena hapa
-            const { error } = await _supabase.auth.updateUser({
-                data: { role: r }
-            });
+            // Hapa nimehakikisha tunabadilisha "role" PEKEE, data zingine haziguswi
+            const { error } = await _supabase
+                .from('profiles')
+                .update({ role: r }) 
+                .eq('id', user.id);
 
             if (!error) { 
                 redirectUser(r); 
             } else {
-                alert("Hitilafu kuhifadhi role: " + error.message);
+                alert("Error: " + error.message);
             }
         }
 
         function redirectUser(role) {
-            if(role === 'merchant') window.location.href = 'merchant_dashboard.html';
-            else window.location.href = 'client_dashboard.html';
+            window.location.href = (role === 'merchant') ? 'merchant_dashboard.html' : 'client_dashboard.html';
         }
 
         init();
