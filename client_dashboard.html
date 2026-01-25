@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMR MARKET | Dashboard</title>
+    <title>EMR MARKET | Reality Feed</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
-            --emr-blue: #0a1931; 
             --emr-gold: #ffc947; 
-            --bg-dark: #050a14;
-            --card-glass: rgba(255, 255, 255, 0.05);
+            --bg-dark: #000;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -23,163 +21,158 @@
             overflow: hidden; 
         }
 
-        /* Top Bar: E-commerce Style */
-        .header {
-            position: fixed; top: 0; width: 100%; height: 70px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; background: rgba(5, 10, 20, 0.95);
-            backdrop-filter: blur(10px); z-index: 1000;
-            border-bottom: 0.5px solid rgba(255,201,71,0.2);
+        /* Top Tabs Like TikTok */
+        .top-nav {
+            position: fixed; top: 0; width: 100%; height: 80px;
+            display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 10px; z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+        .nav-tabs { display: flex; gap: 20px; font-weight: 700; font-size: 1.1rem; }
+        .nav-tab { opacity: 0.6; cursor: pointer; position: relative; }
+        .nav-tab.active { opacity: 1; }
+        .nav-tab.active::after {
+            content: ''; position: absolute; bottom: -5px; left: 25%; width: 50%;
+            height: 3px; background: white; border-radius: 2px;
         }
 
-        .search-bar {
-            background: var(--card-glass); border-radius: 20px;
-            padding: 8px 15px; display: flex; align-items: center; flex: 1; margin: 0 15px;
-        }
-        .search-bar input { background: none; border: none; color: white; margin-left: 10px; width: 100%; outline: none; }
-
-        /* TikTok-Ecommerce Hybrid Feed */
+        /* Feed System */
         .feed {
             height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory;
-            padding-top: 70px; padding-bottom: 80px;
+        }
+        .job-card {
+            height: 100vh; width: 100%; scroll-snap-align: center;
+            position: relative; display: flex; flex-direction: column; justify-content: flex-end;
         }
 
-        .job-item {
-            height: calc(100vh - 150px); width: 100%; 
-            scroll-snap-align: center; position: relative;
-            padding: 15px; display: flex; align-items: center;
+        /* Reality Background Image */
+        .full-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center; z-index: -1;
+        }
+        .overlay {
+            position: absolute; bottom: 0; width: 100%; height: 50%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
         }
 
-        .product-card {
-            background: var(--card-glass);
-            width: 100%; height: 100%; border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative; overflow: hidden;
-            display: flex; flex-direction: column;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        /* Reality Interaction Icons (Right Side) */
+        .side-bar {
+            position: absolute; right: 12px; bottom: 100px;
+            display: flex; flex-direction: column; gap: 22px; align-items: center;
         }
-
-        /* Image Section */
-        .product-img {
-            height: 60%; width: 100%; background-size: cover; background-position: center;
-            position: relative;
-        }
-
-        .price-tag {
-            position: absolute; top: 20px; right: 20px;
-            background: var(--emr-gold); color: #000;
-            padding: 5px 15px; border-radius: 15px; font-weight: 800;
-            font-size: 1.1rem; box-shadow: 0 5px 15px rgba(255,201,113,0.4);
-        }
-
-        /* Product Details */
-        .product-details {
-            padding: 20px; flex: 1; display: flex; flex-direction: column;
-            justify-content: space-between; background: linear-gradient(to bottom, transparent, #0a1931);
-        }
-
-        .merchant-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .merchant-row img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--emr-gold); }
+        .icon-group { text-align: center; }
+        .icon-group i { font-size: 1.9rem; display: block; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .icon-group span { font-size: 0.7rem; font-weight: 600; margin-top: 2px; display: block; }
         
-        .buy-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .pfp-wrap {
+            width: 48px; height: 48px; border-radius: 50%; border: 2px solid white;
+            background-size: cover; margin-bottom: 10px; position: relative;
+        }
+        .follow-plus {
+            position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            background: #fe2c55; border-radius: 50%; width: 18px; height: 18px;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
+        }
+
+        /* Content Info */
+        .content-info { padding: 20px; margin-bottom: 75px; width: 80%; }
+        .user-handle { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; }
+        .job-desc { font-size: 0.95rem; line-height: 1.4; opacity: 0.9; margin-bottom: 12px; }
         
-        .btn-apply {
-            flex: 2; background: var(--emr-gold); color: #000;
-            border: none; border-radius: 15px; font-weight: 700;
-            font-size: 1rem; cursor: pointer; transition: 0.3s;
+        .price-badge {
+            background: var(--emr-gold); color: black; display: inline-block;
+            padding: 5px 15px; border-radius: 6px; font-weight: 800; margin-bottom: 15px;
         }
 
-        .btn-cart {
-            flex: 1; background: rgba(255,255,255,0.1); color: white;
-            border: 1px solid rgba(255,255,255,0.2); border-radius: 15px;
-            display: flex; align-items: center; justify-content: center;
+        /* Footer Menu */
+        .bottom-menu {
+            position: fixed; bottom: 0; width: 100%; height: 65px;
+            background: #000; display: flex; justify-content: space-around;
+            align-items: center; border-top: 0.1px solid #333; z-index: 1001;
         }
-
-        /* Bottom Menu */
-        .footer {
-            position: fixed; bottom: 0; width: 100%; height: 75px;
-            background: rgba(5, 10, 20, 0.98); display: flex;
-            justify-content: space-around; align-items: center;
-            border-top: 0.5px solid rgba(255,255,255,0.1);
-        }
-
-        .nav-link { text-align: center; color: #555; text-decoration: none; font-size: 0.7rem; }
-        .nav-link.active { color: var(--emr-gold); }
-        .nav-link i { font-size: 1.5rem; display: block; margin-bottom: 3px; }
+        .menu-item { color: #888; text-align: center; font-size: 0.65rem; }
+        .menu-item.active { color: white; }
+        .menu-item i { font-size: 1.5rem; display: block; }
 
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <a href="settings.html" style="color:var(--emr-gold)"><i class="fas fa-th-large fa-lg"></i></a>
-        <div class="search-bar">
-            <i class="fas fa-search" style="opacity:0.5"></i>
-            <input type="text" placeholder="Tafuta kazi au bidhaa...">
-        </div>
-        <div style="position:relative">
-            <i class="fas fa-shopping-bag fa-lg"></i>
-            <span style="position:absolute; top:-8px; right:-8px; background:red; font-size:10px; padding:2px 5px; border-radius:50%">3</span>
-        </div>
-    </header>
-
-    <div class="feed">
-        <div class="job-item">
-            <div class="product-card">
-                <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80');">
-                    <div class="price-tag">TZS 2,500</div>
-                </div>
-                <div class="product-details">
-                    <div>
-                        <div class="merchant-row">
-                            <img src="https://i.pravatar.cc/100?u=1" alt="Seller">
-                            <span>@King_Marketing <i class="fas fa-check-circle" style="color:#1da1f2; font-size:12px"></i></span>
-                        </div>
-                        <h4 style="margin-bottom:5px">Instagram Power Boost</h4>
-                        <p style="font-size:0.75rem; opacity:0.7">Fanya 'Like' na 'Comment' kwenye picha 5 za mteja huyu upate malipo yako papo hapo.</p>
-                    </div>
-                    <div class="buy-actions">
-                        <button class="btn-apply" onclick="startTask()">ANZA KAZI</button>
-                        <button class="btn-cart"><i class="far fa-heart"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="job-item">
-            <div class="product-card">
-                <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1611606063065-ee7946f0787a?auto=format&fit=crop&w=800&q=80');">
-                    <div class="price-tag">TZS 1,000</div>
-                </div>
-                <div class="product-details">
-                    <div>
-                        <div class="merchant-row">
-                            <img src="https://i.pravatar.cc/100?u=2" alt="Seller">
-                            <span>@Tiktok_Growth_TZ</span>
-                        </div>
-                        <h4 style="margin-bottom:5px">Follow & Share Task</h4>
-                        <p style="font-size:0.75rem; opacity:0.7">Kazi rahisi ya kufuata akaunti na kusambaza video moja ya bidhaa za urembo.</p>
-                    </div>
-                    <div class="buy-actions">
-                        <button class="btn-apply" onclick="startTask()">ANZA KAZI</button>
-                        <button class="btn-cart"><i class="far fa-heart"></i></button>
-                    </div>
-                </div>
-            </div>
+    <div class="top-nav">
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="loadFeed('following', this)">Following</div>
+            <div class="nav-tab active" onclick="loadFeed('foryou', this)">For You</div>
         </div>
     </div>
 
-    <footer class="footer">
-        <a href="#" class="nav-link active"><i class="fas fa-home"></i>Home</a>
-        <a href="notif.html" class="nav-link"><i class="fas fa-bolt"></i>Kazi</a>
-        <a href="stats.html" class="nav-link"><i class="fas fa-wallet"></i>Wallet</a>
-        <a href="profile.html" class="nav-link"><i class="fas fa-user"></i>Profile</a>
-    </footer>
+    <div class="feed" id="feedContainer">
+        </div>
+
+    <div class="bottom-menu">
+        <div class="menu-item active"><i class="fas fa-home"></i>Home</div>
+        <div class="menu-item"><i class="fas fa-search"></i>Discover</div>
+        <div class="menu-item"><i class="fas fa-plus-square" style="color:white; font-size:2rem"></i></div>
+        <div class="menu-item" onclick="location.href='live_chat.html'"><i class="fas fa-comment-dots"></i>Inbox</div>
+        <div class="menu-item"><i class="fas fa-user"></i>Profile</div>
+    </div>
 
     <script>
-        function startTask() {
-            alert("Kazi imeanza! Fuata maelekezo kisha upige picha ya uthibitisho (Screenshot).");
+        // DATA ZAKO ZILIZO SAHIHI
+        const _URL = 'https://bnskxnaqjmsrtzglsdug.supabase.co';
+        const _KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
+        const _supabase = supabase.createClient(_URL, _KEY);
+
+        async function loadFeed(type, el) {
+            // Update UI tabs
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const feed = document.getElementById('feedContainer');
+            feed.innerHTML = '<div style="padding:100px; text-align:center">Inapakia Reality...</div>';
+
+            const { data: jobs, error } = await _supabase
+                .from('jobs')
+                .select('*, profiles(username, avatar_url)');
+
+            if (jobs) {
+                feed.innerHTML = '';
+                jobs.forEach(job => {
+                    feed.innerHTML += `
+                    <div class="job-card">
+                        <div class="full-img" style="background-image: url('${job.image_url}')"></div>
+                        <div class="overlay"></div>
+                        
+                        <div class="side-bar">
+                            <div class="pfp-wrap" style="background-image: url('${job.profiles.avatar_url || 'https://i.pravatar.cc/100'}')">
+                                <div class="follow-plus"><i class="fas fa-plus"></i></div>
+                            </div>
+                            <div class="icon-group"><i class="fas fa-heart"></i><span>1.5k</span></div>
+                            <div class="icon-group" onclick="shareIt()"><i class="fas fa-share-square"></i><span>Share</span></div>
+                            <div class="icon-group"><i class="fas fa-comment-dots"></i><span>42</span></div>
+                        </div>
+
+                        <div class="content-info">
+                            <div class="user-handle">@${job.profiles.username}</div>
+                            <div class="job-desc">${job.description}</div>
+                            <div class="price-badge">MALIPO: TZS ${job.price}</div>
+                            <button onclick="startTask('${job.id}')" style="width:100%; background:white; color:black; border:none; padding:12px; border-radius:8px; font-weight:800">ANZA KAZI</button>
+                        </div>
+                    </div>
+                    `;
+                });
+            }
         }
+
+        function shareIt() {
+            if (navigator.share) navigator.share({title: 'EMR Jobs', url: window.location.href});
+        }
+
+        function startTask(id) {
+            alert("Umeanza kazi! Hakikisha unapiga picha ya ushahidi (screenshot) baada ya kumaliza.");
+        }
+
+        // Start
+        loadFeed('foryou', document.querySelector('.active'));
     </script>
 </body>
 </html>
