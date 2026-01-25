@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMR MARKET | REALITY</title>
+    <title>EMR MARKET | Reality Feed</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,39 +11,46 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: white; overflow: hidden; }
 
+        /* Navigation */
         .top-nav { position: fixed; top: 0; width: 100%; height: 80px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; z-index: 1000; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
         .nav-tabs { display: flex; gap: 25px; }
         .nav-tab { opacity: 0.6; cursor: pointer; font-weight: 700; font-size: 1.1rem; }
         .nav-tab.active { opacity: 1; border-bottom: 3px solid white; }
 
+        /* Feed Styling */
         .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .feed::-webkit-scrollbar { display: none; }
         .job-card { height: 100vh; width: 100%; scroll-snap-align: center; position: relative; display: flex; flex-direction: column; justify-content: flex-end; }
         
         .full-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; z-index: -1; }
-        .overlay { position: absolute; bottom: 0; width: 100%; height: 65%; background: linear-gradient(to top, rgba(0,0,0,1) 25%, transparent); }
+        .overlay { position: absolute; bottom: 0; width: 100%; height: 65%; background: linear-gradient(to top, rgba(0,0,0,1) 20%, transparent); }
 
-        /* Platform Logo (Instagram, FB etc) */
-        .platform-logo { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 80px; opacity: 0.8; z-index: 2; pointer-events: none; }
+        /* Platform Logo (Instagram, FB, TikTok) */
+        .platform-logo { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; object-fit: contain; opacity: 0.9; z-index: 2; pointer-events: none; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
 
-        .side-bar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; }
-        .pfp-wrap { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background-size: cover; background-position: center; position: relative; }
+        /* Side Actions */
+        .side-bar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 10; }
+        .pfp-wrap { width: 52px; height: 52px; border-radius: 50%; border: 2px solid white; background-size: cover; background-position: center; position: relative; }
         .follow-badge { position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: #fe2c55; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 2px solid black; }
         
         .icon-group { text-align: center; cursor: pointer; }
-        .icon-group i { font-size: 2.2rem; display: block; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-        .icon-group span { font-size: 0.75rem; font-weight: 600; }
+        .icon-group i { font-size: 2.2rem; display: block; text-shadow: 0 2px 10px rgba(0,0,0,0.8); transition: transform 0.2s; }
+        .icon-group:active i { transform: scale(0.8); }
+        .icon-group span { font-size: 0.75rem; font-weight: 600; margin-top: 2px; display: block; }
 
-        .content-info { padding: 20px; margin-bottom: 80px; width: 85%; z-index: 5; }
+        /* Content Info */
+        .content-info { padding: 20px; margin-bottom: 85px; width: 85%; z-index: 5; }
         .user-handle { font-weight: 700; font-size: 1.2rem; margin-bottom: 8px; color: white; display: flex; align-items: center; gap: 5px; }
-        .job-desc { font-size: 0.95rem; line-height: 1.4; margin-bottom: 15px; color: #f0f0f0; }
-        .job-desc a { color: var(--emr-gold); text-decoration: underline; font-weight: bold; }
+        .job-desc { font-size: 0.95rem; line-height: 1.4; margin-bottom: 15px; color: #f5f5f5; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .job-desc a { color: var(--emr-gold); text-decoration: underline; font-weight: bold; pointer-events: auto; }
         
-        .price-badge { background: var(--emr-gold); color: black; display: inline-block; padding: 6px 18px; border-radius: 8px; font-weight: 900; margin-bottom: 15px; font-size: 1.1rem; }
-        .btn-work { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 1rem; text-transform: uppercase; }
+        .price-badge { background: var(--emr-gold); color: black; display: inline-block; padding: 6px 18px; border-radius: 8px; font-weight: 900; margin-bottom: 15px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn-work { width: 100%; background: #fff; color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 1rem; letter-spacing: 1px; transition: 0.2s; }
+        .btn-work:active { transform: scale(0.98); background: #eee; }
 
+        /* Bottom Menu */
         .bottom-menu { position: fixed; bottom: 0; width: 100%; height: 75px; background: black; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1000; }
-        .menu-item { color: #888; text-decoration: none; font-size: 1.7rem; }
+        .menu-item { color: #888; text-decoration: none; font-size: 1.7rem; transition: 0.3s; }
         .menu-item.active { color: white; }
     </style>
 </head>
@@ -51,13 +58,13 @@
 
     <div class="top-nav">
         <div class="nav-tabs">
-            <div class="nav-tab active" onclick="fetchJobs()">Kwa Ajili Yako</div>
-            <div class="nav-tab" onclick="fetchJobs()">Unapofollow</div>
+            <div class="nav-tab active" onclick="fetchJobs()">For You</div>
+            <div class="nav-tab" onclick="fetchJobs()">Following</div>
         </div>
     </div>
 
     <div class="feed" id="feedContainer">
-        <center style="padding-top: 50vh;">Inatafuta fursa...</center>
+        <center style="padding-top: 50vh; font-weight: 700;">INAPAKIA KAZI...</center>
     </div>
 
     <div class="bottom-menu">
@@ -73,11 +80,12 @@
         const _KEY = 'sb_publishable_VZ5Up105f3DIr8bcrDFqmA_jwL4vA3K';
         const _supabase = supabase.createClient(_URL, _KEY);
 
+        // Logic ya kuonyesha Logo katikati ya kadi
         function getPlatformLogo(text) {
-            const lower = text.toLowerCase();
+            const lower = (text || "").toLowerCase();
             if (lower.includes('instagram')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png';
             if (lower.includes('facebook')) return 'https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_(2019).png';
-            if (lower.includes('tiktok')) return 'https://www.edigitalagency.com.au/wp-content/uploads/TikTok-logo-png.png';
+            if (lower.includes('tiktok')) return 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png';
             if (lower.includes('youtube')) return 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
             if (lower.includes('telegram')) return 'https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg';
             return ''; 
@@ -87,22 +95,42 @@
             const feed = document.getElementById('feedContainer');
             const { data: { user } } = await _supabase.auth.getUser();
 
+            // SQL Join iliyosahihishwa kuondoa error ya Relationship
             const { data: jobs, error } = await _supabase
                 .from('jobs')
-                .select(`*, profiles!merchant_id(full_name, avatar_url, username), job_likes(user_id), followers:profiles!merchant_id(followers(follower_id))`);
+                .select(`
+                    *, 
+                    profiles:merchant_id (
+                        full_name, 
+                        avatar_url, 
+                        username,
+                        followers!merchant_id (follower_id)
+                    ),
+                    job_likes (user_id)
+                `);
 
-            if (error) { feed.innerHTML = `<center style="margin-top:50%">${error.message}</center>`; return; }
+            if (error) { 
+                console.error("Fetch error:", error);
+                feed.innerHTML = `<center style="margin-top:50%">Hitilafu: ${error.message}</center>`;
+                return; 
+            }
 
             feed.innerHTML = '';
             jobs.forEach(job => {
-                const fullName = job.profiles?.full_name || job.profiles?.username || 'User';
-                const firstName = fullName.split(' ')[0];
-                const avatar = job.profiles?.avatar_url || 'https://i.pravatar.cc/100';
-                const descLinks = job.description.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                const profile = job.profiles;
+                const fullName = profile?.full_name || profile?.username || 'User';
+                const firstName = fullName.split(' ')[0]; // Jina la kwanza pekee
+                const avatar = profile?.avatar_url || 'https://i.pravatar.cc/100';
                 
+                // Link clickable kwnye description
+                const descWithLinks = job.description.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                
+                // Platform Logo Detection
                 const platformLogo = getPlatformLogo(job.description + job.title);
+
+                // Check Persistence (Data iliyohifadhiwa)
                 const hasLiked = user && job.job_likes?.some(l => l.user_id === user.id);
-                const isFollowing = user && job.profiles?.followers?.some(f => f.follower_id === user.id);
+                const isFollowing = user && profile?.followers?.some(f => f.follower_id === user.id);
 
                 feed.innerHTML += `
                 <div class="job-card">
@@ -121,11 +149,14 @@
                             <span class="label">${hasLiked ? 'Liked' : 'Like'}</span>
                         </div>
                         <div class="icon-group" onclick="shareIt()"><i class="fas fa-share"></i><span>Share</span></div>
+                        <div class="icon-group"><i class="fas fa-bookmark"></i><span>Save</span></div>
                     </div>
 
                     <div class="content-info">
-                        <div class="user-handle" onclick="location.href='profile.html?id=${job.merchant_id}'">@${firstName} <i class="fas fa-check-circle" style="color:#1da1f2; font-size:14px"></i></div>
-                        <div class="job-desc">${descLinks}</div>
+                        <div class="user-handle" onclick="location.href='profile.html?id=${job.merchant_id}'">
+                            @${firstName} <i class="fas fa-check-circle" style="color:#1da1f2; font-size:14px"></i>
+                        </div>
+                        <div class="job-desc">${descWithLinks}</div>
                         <div class="price-badge">TZS ${job.price}</div>
                         <button class="btn-work" onclick="startTask('${job.id}')">ANZA KAZI</button>
                     </div>
@@ -135,7 +166,7 @@
 
         async function likeJob(jobId, el) {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) return alert("Ingia kwanza!");
+            if (!user) return alert("Ingia kwanza ili uweze ku-Like!");
             const icon = el.querySelector('i');
             const label = el.querySelector('.label');
 
@@ -150,17 +181,21 @@
 
         async function followMerchant(mId, el) {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) return alert("Ingia kwanza!");
+            if (!user) return alert("Ingia kwanza ili uweze ku-Follow!");
             const { error } = await _supabase.from('followers').insert([{ follower_id: user.id, merchant_id: mId }]);
-            if (!error) { el.style.display = 'none'; alert("Umeanza kufuata!"); }
-            else { el.style.display = 'none'; }
+            if (!error) { 
+                el.style.display = 'none'; 
+                alert("Umeanza kumfuata mfanyabiashara huyu!"); 
+            } else {
+                el.style.display = 'none';
+            }
         }
 
-        function shareIt() { if (navigator.share) navigator.share({url: window.location.href}); }
-        function startTask(id) { alert("Kazi imeanza! Tunza screenshot ya ushahidi."); }
+        function shareIt() { if (navigator.share) navigator.share({title: 'EMR Job', url: window.location.href}); }
+        function startTask(id) { alert("Kazi imeanza! Piga screenshot ya ushahidi ukimaliza."); }
 
+        // Start Fetching
         fetchJobs();
     </script>
 </body>
 </html>
-
