@@ -30,14 +30,14 @@
         .icon-group span { font-size: 0.75rem; font-weight: 600; margin-top: 2px; display: block; }
         
         .pfp-wrap { width: 52px; height: 52px; border-radius: 50%; border: 2px solid white; background-size: cover; background-position: center; position: relative; margin-bottom: 5px; }
-        .follow-badge { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #fe2c55; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid black; }
+        .follow-badge { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #fe2c55; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid black; cursor: pointer; }
 
         .content-info { padding: 20px; margin-bottom: 85px; width: 85%; z-index: 5; }
         .user-handle { font-weight: 700; font-size: 1.2rem; margin-bottom: 5px; color: white; display: flex; align-items: center; gap: 5px; cursor: pointer; }
         .job-desc { font-size: 0.95rem; line-height: 1.4; opacity: 0.9; margin-bottom: 12px; color: #eee; }
-        .job-desc a { color: var(--emr-gold); text-decoration: underline; pointer-events: auto; } /* Link clickable */
+        .job-desc a { color: var(--emr-gold); text-decoration: underline; pointer-events: auto; }
 
-        .price-badge { background: var(--emr-gold); color: black; display: inline-block; padding: 6px 15px; border-radius: 8px; font-weight: 800; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(255,201,71,0.3); }
+        .price-badge { background: var(--emr-gold); color: black; display: inline-block; padding: 6px 15px; border-radius: 8px; font-weight: 800; margin-bottom: 15px; }
 
         .bottom-menu { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 1001; }
         .menu-item { color: #777; text-align: center; cursor: pointer; text-decoration: none; }
@@ -50,8 +50,8 @@
 
     <div class="top-nav">
         <div class="nav-tabs">
-            <div class="nav-tab active" onclick="fetchJobs('foryou')">For You</div>
-            <div class="nav-tab" onclick="fetchJobs('following')">Following</div>
+            <div class="nav-tab active" onclick="fetchJobs()">For You</div>
+            <div class="nav-tab" onclick="fetchJobs()">Following</div>
         </div>
     </div>
 
@@ -83,12 +83,9 @@
 
             feed.innerHTML = '';
             jobs.forEach(job => {
-                // Jina la kwanza pekee la mfanyabiashara
                 const fullName = job.profiles?.full_name || job.profiles?.username || 'Merchant';
                 const firstName = fullName.split(' ')[0];
                 const avatar = job.profiles?.avatar_url || 'https://i.pravatar.cc/100';
-                
-                // Tunafanya link ndani ya description ziweze kugusika
                 const descWithLinks = job.description.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
 
                 feed.innerHTML += `
@@ -97,11 +94,11 @@
                     <div class="overlay"></div>
                     <div class="side-bar">
                         <div class="pfp-wrap" style="background-image: url('${avatar}')">
-                            <div class="follow-badge" onclick="followMerchant('${job.merchant_id}')"><i class="fas fa-plus"></i></div>
+                            <div class="follow-badge" onclick="followMerchant('${job.merchant_id}', this)"><i class="fas fa-plus"></i></div>
                         </div>
-                        <div class="icon-group" onclick="likeJob('${job.id}', this)">
+                        <div class="icon-group" onclick="likeJob(${job.id}, this)">
                             <i class="fas fa-heart"></i>
-                            <span class="like-count">1.2k</span>
+                            <span class="like-count">Like</span>
                         </div>
                         <div class="icon-group" onclick="shareIt()">
                             <i class="fas fa-share"></i>
@@ -124,15 +121,43 @@
             });
         }
 
-        async function followMerchant(merchantId) {
-            // Hapa utaongeza logic ya ku-insert kwenye 'followers' table
-            alert("Umeanza kumfuata " + merchantId);
-        }
+        // --- REALITY JAVA LOGIC ---
 
         async function likeJob(jobId, element) {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return alert("Ingia kwanza ili uweze ku-like!");
+
             const icon = element.querySelector('i');
-            icon.style.color = icon.style.color === 'red' ? 'white' : 'red';
-            // Reality: Hapa tunge-update count kwenye 'job_likes' table
+            const countSpan = element.querySelector('.like-count');
+
+            const { error } = await _supabase
+                .from('job_likes')
+                .insert([{ user_id: user.id, job_id: jobId }]);
+
+            if (error) {
+                await _supabase.from('job_likes').delete().match({ user_id: user.id, job_id: jobId });
+                icon.style.color = 'white';
+                countSpan.innerText = "Like";
+            } else {
+                icon.style.color = 'red';
+                countSpan.innerText = "Liked";
+            }
+        }
+
+        async function followMerchant(merchantId, badgeElement) {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return alert("Ingia kwanza ili uweze ku-follow!");
+
+            const { error } = await _supabase
+                .from('followers')
+                .insert([{ follower_id: user.id, merchant_id: merchantId }]);
+
+            if (error) {
+                alert("Tayari unamfuata mfanyabiashara huyu!");
+            } else {
+                alert("Hongera! Umeanza kumfuata.");
+                badgeElement.style.display = 'none'; // Ficha (+) baada ya kufollow
+            }
         }
 
         function shareIt() {
